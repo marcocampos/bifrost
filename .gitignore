@@ -9,3 +9,4 @@ build/
 *.lock
 src/bifrost/_version.py
 .coverage
+.claude/
