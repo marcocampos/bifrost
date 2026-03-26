@@ -18,7 +18,11 @@
       "Bash(curl -s 'http://localhost:8080/api/stats?period=7day&limit=3')",
       "Bash(lsof -ti:8080)",
       "Bash(xargs kill:*)",
-      "Bash(git revert:*)"
+      "Bash(git revert:*)",
+      "Bash(gh api:*)",
+      "Bash(git remote:*)",
+      "Bash(mv ~/Downloads/bifrost-demo.gif docs/screenshots/)",
+      "Bash(mv ~/downloads/bifrost-demo.gif docs/screenshots/)"
     ]
   }
 }

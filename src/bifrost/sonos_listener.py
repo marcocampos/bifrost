@@ -1,7 +1,6 @@
 """Sonos speaker discovery, UPnP event subscriptions, and main event loop."""
 
 import logging
-import re
 import time
 from collections.abc import Callable
 from queue import Empty
@@ -27,7 +26,7 @@ def parse_duration(duration_str: str) -> int:
         if len(parts) == 2:
             return int(parts[0]) * 60 + int(parts[1])
         return int(parts[0])
-    except (ValueError, IndexError):
+    except ValueError, IndexError:
         return 0
 
 
@@ -68,17 +67,13 @@ class SonosListener:
 
         # Filter to group coordinators only
         coordinators = [
-            s for s in discovered
-            if s.group and s.group.coordinator.ip_address == s.ip_address
+            s for s in discovered if s.group and s.group.coordinator.ip_address == s.ip_address
         ]
 
         # Filter by configured speaker names
         if self.config.sonos_speakers:
             allowed = {name.lower() for name in self.config.sonos_speakers}
-            coordinators = [
-                s for s in coordinators
-                if s.player_name.lower() in allowed
-            ]
+            coordinators = [s for s in coordinators if s.player_name.lower() in allowed]
 
         for s in coordinators:
             logger.info("Found speaker", extra={"speaker": s.player_name, "ip": s.ip_address})
@@ -240,9 +235,7 @@ class SonosListener:
                     event = sub.events.get(timeout=0.2)
                     transport_state, track_info = self._parse_event(ip, event)
                     if transport_state:
-                        actions = self.state_manager.handle_event(
-                            ip, transport_state, track_info
-                        )
+                        actions = self.state_manager.handle_event(ip, transport_state, track_info)
                         self._process_actions(actions)
                 except Empty:
                     pass

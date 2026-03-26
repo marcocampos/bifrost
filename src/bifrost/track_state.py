@@ -73,11 +73,13 @@ class TrackStateManager:
                 if track_info:
                     state = PlayState(track=track_info, started_at=now)
                     self._states[speaker_id] = state
-                    actions.append(Action(
-                        type=ActionType.NOW_PLAYING,
-                        speaker_id=speaker_id,
-                        track=track_info,
-                    ))
+                    actions.append(
+                        Action(
+                            type=ActionType.NOW_PLAYING,
+                            speaker_id=speaker_id,
+                            track=track_info,
+                        )
+                    )
                     state.now_playing_sent = True
             else:
                 # Same track resumed from pause
@@ -106,11 +108,13 @@ class TrackStateManager:
         for speaker_id, state in self._states.items():
             if not state.scrobbled and self._is_scrobble_eligible(state, now):
                 state.scrobbled = True
-                actions.append(Action(
-                    type=ActionType.SCROBBLE,
-                    speaker_id=speaker_id,
-                    track=state.track,
-                ))
+                actions.append(
+                    Action(
+                        type=ActionType.SCROBBLE,
+                        speaker_id=speaker_id,
+                        track=state.track,
+                    )
+                )
         return actions
 
     def get_current_tracks(self) -> dict[str, PlayState]:
@@ -127,11 +131,13 @@ class TrackStateManager:
             state.is_playing = False
         if not state.scrobbled and self._is_scrobble_eligible(state, now):
             state.scrobbled = True
-            actions.append(Action(
-                type=ActionType.SCROBBLE,
-                speaker_id=speaker_id,
-                track=state.track,
-            ))
+            actions.append(
+                Action(
+                    type=ActionType.SCROBBLE,
+                    speaker_id=speaker_id,
+                    track=state.track,
+                )
+            )
         return actions
 
     def _is_scrobble_eligible(self, state: PlayState, now: float) -> bool:

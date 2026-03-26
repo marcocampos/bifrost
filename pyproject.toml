@@ -24,10 +24,34 @@ packages = ["src/bifrost"]
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.5.1",
     "pytest>=8.0",
     "pytest-cov>=7.1.0",
     "pytest-mock>=3.14",
+    "ruff>=0.15.7",
 ]
 
 [tool.coverage.run]
 omit = ["src/bifrost/__main__.py"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "SIM",   # flake8-simplify
+]
+ignore = [
+    "E501",  # line length handled by formatter
+    "SIM105", # contextlib.suppress — try/except is clearer in our codebase
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["bifrost"]

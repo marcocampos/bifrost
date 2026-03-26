@@ -277,7 +277,10 @@ class TestProcessActions:
         listener._process_actions(actions)
 
         scrobbler.update_now_playing.assert_called_once_with(
-            artist="Artist", title="Song", album="Album", duration=200,
+            artist="Artist",
+            title="Song",
+            album="Album",
+            duration=200,
         )
 
     def test_scrobble_action(self):
@@ -289,7 +292,11 @@ class TestProcessActions:
         listener._process_actions(actions)
 
         scrobbler.scrobble.assert_called_once_with(
-            artist="Artist", title="Song", timestamp=1000, album="Album", duration=200,
+            artist="Artist",
+            title="Song",
+            timestamp=1000,
+            album="Album",
+            duration=200,
         )
 
     def test_process_actions_calls_state_change(self):
@@ -316,7 +323,10 @@ class TestProcessActions:
 
         listener._process_actions(actions)
         scrobbler.update_now_playing.assert_called_once_with(
-            artist="Artist", title="Song", album=None, duration=None,
+            artist="Artist",
+            title="Song",
+            album=None,
+            duration=None,
         )
 
 
@@ -330,8 +340,13 @@ class TestBroadcastState:
         speaker.player_name = "Kitchen"
         listener._speakers["192.168.1.10"] = speaker
 
-        track = TrackInfo(title="Song", artist="Artist", album="Album",
-                         album_art_url="http://art.jpg", duration_seconds=200)
+        track = TrackInfo(
+            title="Song",
+            artist="Artist",
+            album="Album",
+            album_art_url="http://art.jpg",
+            duration_seconds=200,
+        )
         state_manager.handle_event("192.168.1.10", "PLAYING", track)
 
         listener._broadcast_state()

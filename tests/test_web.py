@@ -151,7 +151,13 @@ def test_stats_returns_data():
 
 def test_stats_clamps_limit():
     scrobbler = MagicMock()
-    scrobbler.get_stats.return_value = {"period": "7day", "total_scrobbles": 0, "top_artists": [], "top_albums": [], "top_tracks": []}
+    scrobbler.get_stats.return_value = {
+        "period": "7day",
+        "total_scrobbles": 0,
+        "top_artists": [],
+        "top_albums": [],
+        "top_tracks": [],
+    }
     app = WebApp(scrobbler=scrobbler)
     client = TestClient(app.app)
 

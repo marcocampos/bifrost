@@ -24,6 +24,7 @@ def main() -> None:
     config = load_config()
 
     from bifrost.logging_config import setup_logging
+
     setup_logging(config.log_level)
 
     logger = logging.getLogger(__name__)

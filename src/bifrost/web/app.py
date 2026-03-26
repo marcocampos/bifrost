@@ -61,7 +61,13 @@ class WebApp:
         @self.app.get("/api/stats")
         async def stats(period: str = "7day", limit: int = 10) -> dict:
             if not self._scrobbler:
-                return {"period": period, "total_scrobbles": 0, "top_artists": [], "top_albums": [], "top_tracks": []}
+                return {
+                    "period": period,
+                    "total_scrobbles": 0,
+                    "top_artists": [],
+                    "top_albums": [],
+                    "top_tracks": [],
+                }
             return self._scrobbler.get_stats(period=period, limit=min(limit, 50))
 
         @self.app.post("/api/love")
@@ -118,11 +124,10 @@ class WebApp:
             try:
                 # Use the event loop from the async context
                 import asyncio
+
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
-                    asyncio.run_coroutine_threadsafe(
-                        ws.send_text(json.dumps(state)), loop
-                    )
+                    asyncio.run_coroutine_threadsafe(ws.send_text(json.dumps(state)), loop)
                 else:
                     loop.run_until_complete(ws.send_text(json.dumps(state)))
             except Exception:

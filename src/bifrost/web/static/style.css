@@ -103,9 +103,9 @@ header {
 }
 
 .logo-icon {
-    width: 20px;
-    height: 20px;
-    color: var(--text);
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
 }
 
 .logo-text {

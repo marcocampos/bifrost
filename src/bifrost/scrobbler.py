@@ -49,7 +49,10 @@ class Scrobbler:
             )
             logger.debug("Now playing updated", extra={"artist": artist, "title": title})
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to update now playing", extra={"artist": artist, "title": title, "error": str(e)})
+            logger.error(
+                "Failed to update now playing",
+                extra={"artist": artist, "title": title, "error": str(e)},
+            )
 
     def scrobble(
         self,
@@ -71,7 +74,9 @@ class Scrobbler:
             )
             logger.info("Scrobbled", extra={"artist": artist, "title": title})
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to scrobble", extra={"artist": artist, "title": title, "error": str(e)})
+            logger.error(
+                "Failed to scrobble", extra={"artist": artist, "title": title, "error": str(e)}
+            )
 
     def get_recent_tracks(self, limit: int = 20) -> list[dict]:
         """Fetch the user's recent scrobbles from Last.fm."""
@@ -82,12 +87,14 @@ class Scrobbler:
             for played in tracks:
                 track = played.track
                 album = played.album
-                result.append({
-                    "artist": str(track.artist),
-                    "title": str(track.title),
-                    "album": str(album) if album else None,
-                    "timestamp": int(played.timestamp) if played.timestamp else None,
-                })
+                result.append(
+                    {
+                        "artist": str(track.artist),
+                        "title": str(track.title),
+                        "album": str(album) if album else None,
+                        "timestamp": int(played.timestamp) if played.timestamp else None,
+                    }
+                )
             return result
         except (pylast.NetworkError, pylast.WSError) as e:
             logger.error("Failed to fetch recent tracks", extra={"error": str(e)})
@@ -152,7 +159,9 @@ class Scrobbler:
             logger.info("Loved track", extra={"artist": artist, "title": title})
             return True
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to love track", extra={"artist": artist, "title": title, "error": str(e)})
+            logger.error(
+                "Failed to love track", extra={"artist": artist, "title": title, "error": str(e)}
+            )
             return False
 
     def unlove_track(self, artist: str, title: str) -> bool:
@@ -163,7 +172,9 @@ class Scrobbler:
             logger.info("Unloved track", extra={"artist": artist, "title": title})
             return True
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to unlove track", extra={"artist": artist, "title": title, "error": str(e)})
+            logger.error(
+                "Failed to unlove track", extra={"artist": artist, "title": title, "error": str(e)}
+            )
             return False
 
     def is_track_loved(self, artist: str, title: str) -> bool:

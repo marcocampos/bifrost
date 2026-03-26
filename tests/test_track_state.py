@@ -1,11 +1,7 @@
 """Tests for track state machine and scrobble eligibility."""
 
-import pytest
-
 from bifrost.track_state import (
-    Action,
     ActionType,
-    PlayState,
     TrackInfo,
     TrackStateManager,
 )
@@ -13,8 +9,11 @@ from bifrost.track_state import (
 
 def make_track(title="Song", artist="Artist", duration=200, uri="x-sonos:track1"):
     return TrackInfo(
-        title=title, artist=artist, album="Album",
-        duration_seconds=duration, uri=uri,
+        title=title,
+        artist=artist,
+        album="Album",
+        duration_seconds=duration,
+        uri=uri,
     )
 
 

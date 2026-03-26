@@ -39,17 +39,13 @@ def test_update_now_playing(scrobbler):
 
 
 def test_update_now_playing_network_error(scrobbler):
-    scrobbler.network.update_now_playing.side_effect = pylast.NetworkError(
-        None, "timeout"
-    )
+    scrobbler.network.update_now_playing.side_effect = pylast.NetworkError(None, "timeout")
     # Should not raise
     scrobbler.update_now_playing("Artist", "Title")
 
 
 def test_update_now_playing_ws_error(scrobbler):
-    scrobbler.network.update_now_playing.side_effect = pylast.WSError(
-        None, "invalid", "details"
-    )
+    scrobbler.network.update_now_playing.side_effect = pylast.WSError(None, "invalid", "details")
     scrobbler.update_now_playing("Artist", "Title")
 
 
@@ -109,9 +105,7 @@ def test_get_recent_tracks(scrobbler):
 
 
 def test_get_recent_tracks_network_error(scrobbler):
-    scrobbler.network.get_authenticated_user.side_effect = pylast.NetworkError(
-        None, "timeout"
-    )
+    scrobbler.network.get_authenticated_user.side_effect = pylast.NetworkError(None, "timeout")
     result = scrobbler.get_recent_tracks()
     assert result == []
 
@@ -160,9 +154,7 @@ def test_get_stats_invalid_period(scrobbler):
 
 
 def test_get_stats_network_error(scrobbler):
-    scrobbler.network.get_authenticated_user.side_effect = pylast.NetworkError(
-        None, "timeout"
-    )
+    scrobbler.network.get_authenticated_user.side_effect = pylast.NetworkError(None, "timeout")
     result = scrobbler.get_stats()
     assert result["total_scrobbles"] == 0
     assert result["top_artists"] == []
