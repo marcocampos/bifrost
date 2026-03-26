@@ -60,7 +60,7 @@ def main() -> None:
     # Start the web server (blocks until stopped)
     uvicorn.run(
         web_app.app,
-        host="0.0.0.0",
+        host="0.0.0.0",  # nosec B104
         port=config.web_port,
         log_level=config.log_level.lower(),
     )
