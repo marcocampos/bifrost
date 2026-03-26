@@ -1,7 +1,5 @@
 """Tests for configuration loading."""
 
-from __future__ import annotations
-
 import pytest
 
 from sonos_lastfm.config import load_config

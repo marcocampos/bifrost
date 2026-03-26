@@ -1,8 +1,7 @@
 """Track play state machine and scrobble eligibility logic."""
 
-from __future__ import annotations
-
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
@@ -48,7 +47,7 @@ class Action:
 
 
 class TrackStateManager:
-    def __init__(self, clock: callable = None) -> None:
+    def __init__(self, clock: Callable[[], float] | None = None) -> None:
         self._states: dict[str, PlayState] = {}
         self._clock = clock or time.monotonic
 

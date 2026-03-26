@@ -1,18 +1,14 @@
 """FastAPI web application with WebSocket for real-time playback updates."""
 
-from __future__ import annotations
-
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-if TYPE_CHECKING:
-    from sonos_lastfm.scrobbler import Scrobbler
+from sonos_lastfm.scrobbler import Scrobbler
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +26,11 @@ class WebApp:
 
     def _setup_routes(self) -> None:
         @self.app.get("/")
-        async def index():
+        async def index() -> FileResponse:
             return FileResponse(STATIC_DIR / "index.html")
 
         @self.app.get("/api/health")
-        async def health():
+        async def health() -> dict:
             lastfm_ok = False
             if self._scrobbler:
                 lastfm_ok = self._scrobbler.verify_credentials()
@@ -45,44 +41,44 @@ class WebApp:
             }
 
         @self.app.get("/api/status")
-        async def status():
+        async def status() -> dict:
             return self._current_state
 
         @self.app.get("/api/history")
-        async def history(limit: int = 20):
+        async def history(limit: int = 20) -> list[dict]:
             if not self._scrobbler:
                 return []
             return self._scrobbler.get_recent_tracks(limit=min(limit, 50))
 
         @self.app.get("/api/stats")
-        async def stats(period: str = "7day", limit: int = 10):
+        async def stats(period: str = "7day", limit: int = 10) -> dict:
             if not self._scrobbler:
                 return {"period": period, "total_scrobbles": 0, "top_artists": [], "top_albums": [], "top_tracks": []}
             return self._scrobbler.get_stats(period=period, limit=min(limit, 50))
 
         @self.app.post("/api/love")
-        async def love_track(artist: str, title: str):
+        async def love_track(artist: str, title: str) -> dict:
             if not self._scrobbler:
                 return {"ok": False}
             ok = self._scrobbler.love_track(artist, title)
             return {"ok": ok}
 
         @self.app.post("/api/unlove")
-        async def unlove_track(artist: str, title: str):
+        async def unlove_track(artist: str, title: str) -> dict:
             if not self._scrobbler:
                 return {"ok": False}
             ok = self._scrobbler.unlove_track(artist, title)
             return {"ok": ok}
 
         @self.app.get("/api/loved")
-        async def is_loved(artist: str, title: str):
+        async def is_loved(artist: str, title: str) -> dict:
             if not self._scrobbler:
                 return {"loved": False}
             loved = self._scrobbler.is_track_loved(artist, title)
             return {"loved": loved}
 
         @self.app.websocket("/ws")
-        async def websocket_endpoint(ws: WebSocket):
+        async def websocket_endpoint(ws: WebSocket) -> None:
             await ws.accept()
             self._connections.append(ws)
             try:

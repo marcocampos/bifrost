@@ -1,7 +1,5 @@
 """Last.fm scrobbler wrapper using pylast."""
 
-from __future__ import annotations
-
 import logging
 import time
 

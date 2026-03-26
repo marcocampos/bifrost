@@ -1,7 +1,5 @@
 """Interactive Last.fm authentication helper."""
 
-from __future__ import annotations
-
 import getpass
 import hashlib
 import sys

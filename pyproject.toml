@@ -2,7 +2,7 @@
 name = "sonos-lastfm"
 version = "0.1.0"
 description = "Scrobble songs played on Sonos speakers to Last.fm"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "soco>=0.30",
     "pylast>=5.3",

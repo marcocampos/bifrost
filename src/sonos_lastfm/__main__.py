@@ -1,7 +1,5 @@
 """Entry point for sonos-lastfm."""
 
-from __future__ import annotations
-
 import logging
 import signal
 import sys

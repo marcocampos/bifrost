@@ -1,20 +1,17 @@
 """Sonos speaker discovery, UPnP event subscriptions, and main event loop."""
 
-from __future__ import annotations
-
 import logging
+import re
 import time
+from collections.abc import Callable
 from queue import Empty
-from typing import TYPE_CHECKING, Callable
 
 import soco
 from soco.events import Subscription
 
+from sonos_lastfm.config import Config
+from sonos_lastfm.scrobbler import Scrobbler
 from sonos_lastfm.track_state import Action, ActionType, TrackInfo, TrackStateManager
-
-if TYPE_CHECKING:
-    from sonos_lastfm.config import Config
-    from sonos_lastfm.scrobbler import Scrobbler
 
 logger = logging.getLogger(__name__)
 

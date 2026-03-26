@@ -1,7 +1,5 @@
 """Tests for track state machine and scrobble eligibility."""
 
-from __future__ import annotations
-
 import pytest
 
 from sonos_lastfm.track_state import (
