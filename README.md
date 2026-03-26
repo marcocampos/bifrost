@@ -178,6 +178,8 @@ uv run pre-commit install
 
 ## Contributing
 
+Contributions are welcome! However, please note:
+
 1. Fork the repository
 2. Create a feature branch from `main`
 3. Write code with tests
@@ -186,6 +188,16 @@ uv run pre-commit install
 
 Direct pushes to `main` are not allowed. All changes require a pull request with passing CI (lint + test).
 
+> **Note:** We are under no obligation to accept any pull request. PRs may be declined for any reason, including but not limited to scope, quality, or project direction.
+
+## Trademarks
+
+**Sonos** is a registered trademark of Sonos, Inc. **Last.fm** is a registered trademark of Last.fm Ltd. This project is not affiliated with, endorsed by, or sponsored by Sonos, Inc. or Last.fm Ltd.
+
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).
+
+## Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
