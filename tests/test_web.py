@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -70,3 +72,25 @@ def test_websocket_receives_current_state(web_app):
     with client.websocket_connect("/ws") as ws:
         data = ws.receive_json()
         assert data == {"test": "data"}
+
+
+def test_broadcast_updates_state(web_app):
+    state = {"spk1": {"title": "Song"}}
+    web_app.broadcast(state)
+    assert web_app._current_state == state
+
+
+def test_broadcast_with_no_connections(web_app):
+    web_app.broadcast({"test": "data"})  # Should not raise
+    assert web_app._current_state == {"test": "data"}
+
+
+def test_broadcast_removes_stale_connections(web_app):
+    stale_ws = MagicMock()
+    stale_ws.send_text = MagicMock(side_effect=Exception("closed"))
+    web_app._connections.append(stale_ws)
+
+    web_app.broadcast({"test": "data"})
+
+    assert stale_ws not in web_app._connections
+    assert web_app._current_state == {"test": "data"}

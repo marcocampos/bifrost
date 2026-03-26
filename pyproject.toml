@@ -24,5 +24,9 @@ packages = ["src/sonos_lastfm"]
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "pytest-cov>=7.1.0",
     "pytest-mock>=3.14",
 ]
+
+[tool.coverage.run]
+omit = ["src/sonos_lastfm/__main__.py"]

@@ -13,7 +13,20 @@ from sonos_lastfm.sonos_listener import (
     get_album_art_url,
     parse_duration,
 )
-from sonos_lastfm.track_state import TrackStateManager
+from sonos_lastfm.track_state import Action, ActionType, TrackInfo, TrackStateManager
+
+
+def _make_config(**kwargs):
+    defaults = dict(lastfm_api_key="key", lastfm_api_secret="secret", lastfm_session_key="session")
+    defaults.update(kwargs)
+    return Config(**defaults)
+
+
+def _make_listener(**kwargs):
+    config = kwargs.pop("config", _make_config())
+    scrobbler = kwargs.pop("scrobbler", MagicMock())
+    state_manager = kwargs.pop("state_manager", TrackStateManager())
+    return SonosListener(config, scrobbler, state_manager, **kwargs)
 
 
 class TestParseDuration:
@@ -190,3 +203,254 @@ class TestDiscoverSpeakers:
         with patch("soco.discover", return_value=None):
             listener = SonosListener(config, MagicMock(), TrackStateManager())
             assert listener.discover_speakers() == []
+
+
+class TestSubscribe:
+    def test_subscribe_success(self):
+        listener = _make_listener()
+        speaker = MagicMock()
+        speaker.ip_address = "192.168.1.10"
+        speaker.player_name = "Living Room"
+        mock_sub = MagicMock()
+        speaker.avTransport.subscribe.return_value = mock_sub
+
+        result = listener.subscribe(speaker)
+        assert result is mock_sub
+        assert "192.168.1.10" in listener._subscriptions
+        assert "192.168.1.10" in listener._speakers
+
+    def test_subscribe_already_subscribed(self):
+        listener = _make_listener()
+        existing_sub = MagicMock()
+        listener._subscriptions["192.168.1.10"] = existing_sub
+
+        speaker = MagicMock()
+        speaker.ip_address = "192.168.1.10"
+
+        result = listener.subscribe(speaker)
+        assert result is existing_sub
+        speaker.avTransport.subscribe.assert_not_called()
+
+    def test_subscribe_failure(self):
+        listener = _make_listener()
+        speaker = MagicMock()
+        speaker.ip_address = "192.168.1.10"
+        speaker.player_name = "Living Room"
+        speaker.avTransport.subscribe.side_effect = Exception("network error")
+
+        result = listener.subscribe(speaker)
+        assert result is None
+        assert "192.168.1.10" not in listener._subscriptions
+
+
+class TestUnsubscribeAll:
+    def test_unsubscribe_all_cleans_up(self):
+        listener = _make_listener()
+        sub1 = MagicMock()
+        sub2 = MagicMock()
+        listener._subscriptions = {"10": sub1, "11": sub2}
+        listener._speakers = {"10": MagicMock(), "11": MagicMock()}
+
+        listener._unsubscribe_all()
+
+        sub1.unsubscribe.assert_called_once()
+        sub2.unsubscribe.assert_called_once()
+        assert len(listener._subscriptions) == 0
+        assert len(listener._speakers) == 0
+
+    def test_unsubscribe_all_handles_errors(self):
+        listener = _make_listener()
+        sub = MagicMock()
+        sub.unsubscribe.side_effect = Exception("fail")
+        listener._subscriptions = {"10": sub}
+        listener._speakers = {"10": MagicMock()}
+
+        listener._unsubscribe_all()  # Should not raise
+        assert len(listener._subscriptions) == 0
+
+
+class TestProcessActions:
+    def test_now_playing_action(self):
+        scrobbler = MagicMock()
+        listener = _make_listener(scrobbler=scrobbler)
+        track = TrackInfo(title="Song", artist="Artist", album="Album", duration_seconds=200)
+        actions = [Action(type=ActionType.NOW_PLAYING, speaker_id="spk1", track=track)]
+
+        listener._process_actions(actions)
+
+        scrobbler.update_now_playing.assert_called_once_with(
+            artist="Artist", title="Song", album="Album", duration=200,
+        )
+
+    def test_scrobble_action(self):
+        scrobbler = MagicMock()
+        listener = _make_listener(scrobbler=scrobbler)
+        track = TrackInfo(title="Song", artist="Artist", album="Album", duration_seconds=200)
+        actions = [Action(type=ActionType.SCROBBLE, speaker_id="spk1", track=track, timestamp=1000)]
+
+        listener._process_actions(actions)
+
+        scrobbler.scrobble.assert_called_once_with(
+            artist="Artist", title="Song", timestamp=1000, album="Album", duration=200,
+        )
+
+    def test_process_actions_calls_state_change(self):
+        callback = MagicMock()
+        listener = _make_listener(on_state_change=callback)
+        track = TrackInfo(title="Song", artist="Artist")
+        actions = [Action(type=ActionType.NOW_PLAYING, speaker_id="spk1", track=track)]
+
+        listener._process_actions(actions)
+        callback.assert_called_once()
+
+    def test_process_actions_no_callback_on_empty(self):
+        callback = MagicMock()
+        listener = _make_listener(on_state_change=callback)
+
+        listener._process_actions([])
+        callback.assert_not_called()
+
+    def test_duration_zero_passed_as_none(self):
+        scrobbler = MagicMock()
+        listener = _make_listener(scrobbler=scrobbler)
+        track = TrackInfo(title="Song", artist="Artist", duration_seconds=0)
+        actions = [Action(type=ActionType.NOW_PLAYING, speaker_id="spk1", track=track)]
+
+        listener._process_actions(actions)
+        scrobbler.update_now_playing.assert_called_once_with(
+            artist="Artist", title="Song", album=None, duration=None,
+        )
+
+
+class TestBroadcastState:
+    def test_broadcast_formats_state(self):
+        callback = MagicMock()
+        state_manager = TrackStateManager()
+        listener = _make_listener(state_manager=state_manager, on_state_change=callback)
+
+        speaker = MagicMock()
+        speaker.player_name = "Kitchen"
+        listener._speakers["192.168.1.10"] = speaker
+
+        track = TrackInfo(title="Song", artist="Artist", album="Album",
+                         album_art_url="http://art.jpg", duration_seconds=200)
+        state_manager.handle_event("192.168.1.10", "PLAYING", track)
+
+        listener._broadcast_state()
+
+        callback.assert_called_once()
+        state = callback.call_args[0][0]
+        assert "192.168.1.10" in state
+        assert state["192.168.1.10"]["speaker_name"] == "Kitchen"
+        assert state["192.168.1.10"]["title"] == "Song"
+        assert state["192.168.1.10"]["is_playing"] is True
+
+    def test_broadcast_no_callback(self):
+        listener = _make_listener(on_state_change=None)
+        listener._broadcast_state()  # Should not raise
+
+    def test_broadcast_unknown_speaker_uses_id(self):
+        callback = MagicMock()
+        state_manager = TrackStateManager()
+        listener = _make_listener(state_manager=state_manager, on_state_change=callback)
+
+        track = TrackInfo(title="Song", artist="Artist")
+        state_manager.handle_event("unknown-ip", "PLAYING", track)
+
+        listener._broadcast_state()
+
+        state = callback.call_args[0][0]
+        assert state["unknown-ip"]["speaker_name"] == "unknown-ip"
+
+
+class TestRefreshSpeakers:
+    def test_removes_old_and_adds_new(self):
+        listener = _make_listener()
+
+        old_sub = MagicMock()
+        listener._subscriptions["192.168.1.10"] = old_sub
+        listener._speakers["192.168.1.10"] = MagicMock()
+
+        new_speaker = MagicMock()
+        new_speaker.ip_address = "192.168.1.20"
+        new_speaker.player_name = "Bedroom"
+        new_speaker.avTransport.subscribe.return_value = MagicMock()
+
+        with patch.object(listener, "discover_speakers", return_value=[new_speaker]):
+            listener._refresh_speakers()
+
+        old_sub.unsubscribe.assert_called_once()
+        assert "192.168.1.10" not in listener._subscriptions
+        assert "192.168.1.20" in listener._subscriptions
+
+    def test_keeps_existing_speakers(self):
+        listener = _make_listener()
+
+        existing_sub = MagicMock()
+        listener._subscriptions["192.168.1.10"] = existing_sub
+        listener._speakers["192.168.1.10"] = MagicMock()
+
+        speaker = MagicMock()
+        speaker.ip_address = "192.168.1.10"
+
+        with patch.object(listener, "discover_speakers", return_value=[speaker]):
+            listener._refresh_speakers()
+
+        existing_sub.unsubscribe.assert_not_called()
+        assert "192.168.1.10" in listener._subscriptions
+
+    def test_handles_unsubscribe_error(self):
+        listener = _make_listener()
+
+        old_sub = MagicMock()
+        old_sub.unsubscribe.side_effect = Exception("fail")
+        listener._subscriptions["192.168.1.10"] = old_sub
+        listener._speakers["192.168.1.10"] = MagicMock()
+
+        with patch.object(listener, "discover_speakers", return_value=[]):
+            listener._refresh_speakers()  # Should not raise
+
+        assert "192.168.1.10" not in listener._subscriptions
+
+
+class TestStop:
+    def test_stop_sets_running_false_and_cleans_up(self):
+        listener = _make_listener()
+        listener._running = True
+        sub = MagicMock()
+        listener._subscriptions["10"] = sub
+        listener._speakers["10"] = MagicMock()
+
+        listener.stop()
+
+        assert listener._running is False
+        sub.unsubscribe.assert_called_once()
+        assert len(listener._subscriptions) == 0
+
+
+class TestParseEventFallbackUri:
+    def test_falls_back_to_current_track_uri(self):
+        listener = _make_listener()
+        speaker = MagicMock()
+        speaker.ip_address = "192.168.1.10"
+        speaker.player_name = "Test"
+        listener._speakers["192.168.1.10"] = speaker
+
+        # Meta with resources that lack a uri attribute
+        meta = SimpleNamespace(
+            title="Song",
+            creator="Artist",
+            album="Album",
+            album_art_uri="",
+            resources=[SimpleNamespace()],  # no .uri
+        )
+        event = MagicMock()
+        event.variables = {
+            "transport_state": "PLAYING",
+            "current_track_meta_data": meta,
+            "current_track_duration": "0:03:00",
+            "current_track_uri": "x-fallback://uri",
+        }
+
+        state, track = listener._parse_event("192.168.1.10", event)
+        assert track.uri == "x-fallback://uri"
