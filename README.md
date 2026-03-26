@@ -20,6 +20,8 @@
 
 ---
 
+> **AI-Assisted Project** — This project is designed and implemented with the assistance of AI and large language models (LLMs). All code, documentation, and configurations have been developed collaboratively with AI tools.
+
 Bifrost automatically scrobbles songs playing on your Sonos system to Last.fm, with a real-time web UI for monitoring playback, browsing your listening history, and exploring stats.
 
 ## Features
