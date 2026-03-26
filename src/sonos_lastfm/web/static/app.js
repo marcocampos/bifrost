@@ -38,7 +38,7 @@
 
     const musicIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
 
-    const speakerIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>`;
+    const speakerIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"></rect><circle cx="12" cy="14" r="4"></circle><line x1="12" y1="6" x2="12.01" y2="6"></line></svg>`;
 
     function render(state) {
         const entries = Object.entries(state);
@@ -71,7 +71,7 @@
             card.className = `player-card${info.is_playing ? " playing" : ""}`;
 
             const artHtml = info.album_art_url
-                ? `<img class="album-art" src="${escapeAttr(info.album_art_url)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'album-art-placeholder\\'>${musicIcon}</div>'">`
+                ? `<img class="album-art" src="${escapeAttr(info.album_art_url)}" alt="" loading="lazy" onerror="this.onerror=null;this.style.display='none';this.parentElement.querySelector('.art-fallback').style.display='flex'"><div class="album-art-placeholder art-fallback" style="display:none">${musicIcon}</div>`
                 : `<div class="album-art-placeholder">${musicIcon}</div>`;
 
             const scrobbleClass = info.scrobbled ? "scrobbled" : "pending";
