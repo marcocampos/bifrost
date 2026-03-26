@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import signal
+import sys
 import threading
 
 import uvicorn
@@ -16,6 +17,12 @@ from sonos_lastfm.web.app import WebApp
 
 
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "auth":
+        from sonos_lastfm.auth import run_auth
+
+        run_auth()
+        return
+
     config = load_config()
 
     logging.basicConfig(
