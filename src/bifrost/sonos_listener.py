@@ -164,7 +164,7 @@ class SonosListener:
                     duration=action.track.duration_seconds or None,
                 )
 
-        if actions and self.on_state_change:
+        if self.on_state_change:
             self._broadcast_state()
 
     def _broadcast_state(self) -> None:
@@ -237,8 +237,6 @@ class SonosListener:
                     if transport_state:
                         actions = self.state_manager.handle_event(ip, transport_state, track_info)
                         self._process_actions(actions)
-                        if not actions:
-                            self._broadcast_state()
                 except Empty:
                     pass
                 except Exception:

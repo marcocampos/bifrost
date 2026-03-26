@@ -126,15 +126,20 @@ class WebApp:
     def broadcast(self, state: dict) -> None:
         """Called from the listener thread to push state updates."""
         self._current_state = state
-        if not self._loop:
+        if self._loop is None:
             return
-        stale: list[WebSocket] = []
         payload = json.dumps(state)
-        for ws in self._connections:
-            try:
-                asyncio.run_coroutine_threadsafe(ws.send_text(payload), self._loop)
-            except Exception:
-                stale.append(ws)
-        for ws in stale:
+        self._loop.call_soon_threadsafe(self._send_to_all, payload)
+
+    def _send_to_all(self, payload: str) -> None:
+        """Send payload to all connected WebSockets (runs on the event loop thread)."""
+        for ws in list(self._connections):
+            asyncio.ensure_future(self._safe_send(ws, payload))
+
+    async def _safe_send(self, ws: WebSocket, payload: str) -> None:
+        """Send to a single WebSocket, removing it on failure."""
+        try:
+            await ws.send_text(payload)
+        except Exception:
             if ws in self._connections:
                 self._connections.remove(ws)

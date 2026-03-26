@@ -1,6 +1,5 @@
 """Tests for Sonos listener utilities and event parsing."""
 
-from queue import Empty
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -309,12 +308,12 @@ class TestProcessActions:
         listener._process_actions(actions)
         callback.assert_called_once()
 
-    def test_process_actions_no_broadcast_on_empty(self):
+    def test_process_actions_broadcasts_even_without_actions(self):
         callback = MagicMock()
         listener = _make_listener(on_state_change=callback)
 
         listener._process_actions([])
-        callback.assert_not_called()
+        callback.assert_called_once()
 
     def test_duration_zero_passed_as_none(self):
         scrobbler = MagicMock()
@@ -338,44 +337,21 @@ class TestBroadcastOnTransportEvent:
         state_manager = TrackStateManager()
         listener = _make_listener(state_manager=state_manager, on_state_change=callback)
 
-        speaker = MagicMock()
-        speaker.player_name = "Kitchen"
-        listener._speakers["192.168.1.10"] = speaker
-
         track = TrackInfo(title="Song", artist="Artist", duration_seconds=200)
 
         # Start playing and mark as scrobbled
         state_manager.handle_event("192.168.1.10", "PLAYING", track)
         ps = state_manager._states["192.168.1.10"]
         ps.scrobbled = True
+        callback.reset_mock()
 
-        # Build a STOPPED event
-        event = MagicMock()
-        event.variables = {
-            "transport_state": "STOPPED",
-            "current_track_meta_data": None,
-        }
-
-        sub = MagicMock()
-        sub.events.get.side_effect = [event, Empty()]
-        listener._subscriptions = {"192.168.1.10": sub}
-
-        # Process one iteration of the event loop inline
-        ip = "192.168.1.10"
-        transport_state, track_info = listener._parse_event(ip, event)
-        actions = state_manager.handle_event(ip, transport_state, track_info)
-
-        # No scrobble actions since already scrobbled
+        # Stop produces no scrobble actions since already scrobbled
+        actions = state_manager.handle_event("192.168.1.10", "STOPPED", None)
         assert len(actions) == 0
 
-        # But _process_actions + fallback broadcast should still notify UI
+        # _process_actions always broadcasts, even with empty actions
         listener._process_actions(actions)
-        # _process_actions won't broadcast (no actions), but the run loop does
-        # Simulate the run loop's fallback broadcast
-        if not actions:
-            listener._broadcast_state()
-
-        callback.assert_called()
+        callback.assert_called_once()
 
     def test_no_extra_broadcast_when_actions_present(self):
         """When actions are present, only _process_actions broadcasts (not double)."""
