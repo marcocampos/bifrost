@@ -171,6 +171,50 @@ def test_stats_without_scrobbler():
     assert data["total_scrobbles"] == 0
 
 
+def test_health_check_ok():
+    scrobbler = MagicMock()
+    scrobbler.verify_credentials.return_value = True
+    app = WebApp(scrobbler=scrobbler)
+    app._speaker_count = 3
+    client = TestClient(app.app)
+
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert data["lastfm"] is True
+    assert data["speakers"] == 3
+
+
+def test_health_check_degraded():
+    scrobbler = MagicMock()
+    scrobbler.verify_credentials.return_value = False
+    app = WebApp(scrobbler=scrobbler)
+    client = TestClient(app.app)
+
+    response = client.get("/api/health")
+    data = response.json()
+    assert data["status"] == "degraded"
+    assert data["lastfm"] is False
+
+
+def test_health_check_no_scrobbler():
+    app = WebApp(scrobbler=None)
+    client = TestClient(app.app)
+
+    response = client.get("/api/health")
+    data = response.json()
+    assert data["status"] == "degraded"
+    assert data["lastfm"] is False
+    assert data["speakers"] == 0
+
+
+def test_update_speaker_count():
+    app = WebApp()
+    app.update_speaker_count(5)
+    assert app._speaker_count == 5
+
+
 def test_love_track():
     scrobbler = MagicMock()
     scrobbler.love_track.return_value = True

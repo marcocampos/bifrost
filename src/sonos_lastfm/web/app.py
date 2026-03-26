@@ -25,12 +25,24 @@ class WebApp:
         self._connections: list[WebSocket] = []
         self._current_state: dict = {}
         self._scrobbler = scrobbler
+        self._speaker_count: int = 0
         self._setup_routes()
 
     def _setup_routes(self) -> None:
         @self.app.get("/")
         async def index():
             return FileResponse(STATIC_DIR / "index.html")
+
+        @self.app.get("/api/health")
+        async def health():
+            lastfm_ok = False
+            if self._scrobbler:
+                lastfm_ok = self._scrobbler.verify_credentials()
+            return {
+                "status": "ok" if lastfm_ok else "degraded",
+                "lastfm": lastfm_ok,
+                "speakers": self._speaker_count,
+            }
 
         @self.app.get("/api/status")
         async def status():
@@ -89,6 +101,10 @@ class WebApp:
             StaticFiles(directory=str(STATIC_DIR)),
             name="static",
         )
+
+    def update_speaker_count(self, count: int) -> None:
+        """Update the number of discovered speakers."""
+        self._speaker_count = count
 
     def broadcast(self, state: dict) -> None:
         """Called from the listener thread to push state updates."""

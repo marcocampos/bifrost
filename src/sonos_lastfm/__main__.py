@@ -43,6 +43,7 @@ def main() -> None:
         scrobbler=scrobbler,
         state_manager=state_manager,
         on_state_change=web_app.broadcast,
+        on_speaker_update=web_app.update_speaker_count,
     )
 
     # Run the Sonos listener in a background thread

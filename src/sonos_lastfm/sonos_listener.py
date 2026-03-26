@@ -51,11 +51,13 @@ class SonosListener:
         scrobbler: Scrobbler,
         state_manager: TrackStateManager,
         on_state_change: Callable[[dict], None] | None = None,
+        on_speaker_update: Callable[[int], None] | None = None,
     ) -> None:
         self.config = config
         self.scrobbler = scrobbler
         self.state_manager = state_manager
         self.on_state_change = on_state_change
+        self.on_speaker_update = on_speaker_update
         self._subscriptions: dict[str, Subscription] = {}
         self._speakers: dict[str, soco.SoCo] = {}
         self._running = False
@@ -83,6 +85,9 @@ class SonosListener:
 
         for s in coordinators:
             logger.info("Found speaker", extra={"speaker": s.player_name, "ip": s.ip_address})
+
+        if self.on_speaker_update:
+            self.on_speaker_update(len(coordinators))
 
         return coordinators
 
