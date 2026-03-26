@@ -1,0 +1,7 @@
+services:
+  sonos-lastfm:
+    build: .
+    # host networking is required for UPnP/SSDP multicast discovery
+    network_mode: host
+    env_file: .env
+    restart: unless-stopped
