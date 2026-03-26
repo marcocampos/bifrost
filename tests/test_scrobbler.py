@@ -170,6 +170,20 @@ def test_get_stats_network_error(scrobbler):
     assert result["top_artists"] == []
 
 
+def test_verify_credentials_success(scrobbler):
+    mock_user = MagicMock()
+    mock_user.__str__ = lambda self: "testuser"
+    scrobbler.network.get_authenticated_user.return_value = mock_user
+    assert scrobbler.verify_credentials() is True
+
+
+def test_verify_credentials_failure(scrobbler):
+    scrobbler.network.get_authenticated_user.side_effect = pylast.WSError(
+        None, "invalid", "Invalid session key"
+    )
+    assert scrobbler.verify_credentials() is False
+
+
 def test_love_track(scrobbler):
     scrobbler.network.get_track.return_value = MagicMock()
     assert scrobbler.love_track("Artist", "Title") is True

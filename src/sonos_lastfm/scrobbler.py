@@ -24,6 +24,17 @@ class Scrobbler:
         self._username = config.lastfm_username or "(session key)"
         logger.info("Connected to Last.fm", extra={"username": self._username})
 
+    def verify_credentials(self) -> bool:
+        """Verify Last.fm credentials are valid by fetching the authenticated user."""
+        try:
+            user = self.network.get_authenticated_user()
+            name = str(user)
+            logger.info("Last.fm credentials verified", extra={"username": name})
+            return True
+        except (pylast.NetworkError, pylast.WSError) as e:
+            logger.error("Last.fm credential verification failed", extra={"error": str(e)})
+            return False
+
     def update_now_playing(
         self,
         artist: str,

@@ -28,7 +28,13 @@ def main() -> None:
     from sonos_lastfm.logging_config import setup_logging
     setup_logging(config.log_level)
 
+    logger = logging.getLogger(__name__)
+
     scrobbler = Scrobbler(config)
+    if not scrobbler.verify_credentials():
+        logger.error("Last.fm credentials are invalid. Run 'sonos-lastfm auth' to reconfigure.")
+        sys.exit(1)
+
     state_manager = TrackStateManager()
     web_app = WebApp(scrobbler=scrobbler)
 
