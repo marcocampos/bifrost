@@ -2,7 +2,7 @@
 
 import pytest
 
-from sonos_lastfm.track_state import (
+from bifrost.track_state import (
     Action,
     ActionType,
     PlayState,

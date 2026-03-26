@@ -1,5 +1,5 @@
 [project]
-name = "sonos-lastfm"
+name = "bifrost"
 version = "0.1.0"
 description = "Scrobble songs played on Sonos speakers to Last.fm"
 requires-python = ">=3.14"
@@ -13,14 +13,14 @@ dependencies = [
 ]
 
 [project.scripts]
-sonos-lastfm = "sonos_lastfm.__main__:main"
+bifrost = "bifrost.__main__:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sonos_lastfm"]
+packages = ["src/bifrost"]
 
 [dependency-groups]
 dev = [
@@ -30,4 +30,4 @@ dev = [
 ]
 
 [tool.coverage.run]
-omit = ["src/sonos_lastfm/__main__.py"]
+omit = ["src/bifrost/__main__.py"]

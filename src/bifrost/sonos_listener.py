@@ -9,9 +9,9 @@ from queue import Empty
 import soco
 from soco.events import Subscription
 
-from sonos_lastfm.config import Config
-from sonos_lastfm.scrobbler import Scrobbler
-from sonos_lastfm.track_state import Action, ActionType, TrackInfo, TrackStateManager
+from bifrost.config import Config
+from bifrost.scrobbler import Scrobbler
+from bifrost.track_state import Action, ActionType, TrackInfo, TrackStateManager
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 services:
-  sonos-lastfm:
+  bifrost:
     build: .
     # host networking is required for UPnP/SSDP multicast discovery
     network_mode: host

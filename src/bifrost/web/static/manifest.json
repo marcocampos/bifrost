@@ -1,6 +1,6 @@
 {
-  "name": "sonos-lastfm",
-  "short_name": "sonos-lastfm",
+  "name": "Bifrost",
+  "short_name": "Bifrost",
   "description": "Scrobble songs from Sonos to Last.fm",
   "start_url": "/",
   "display": "standalone",

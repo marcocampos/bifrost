@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 import pylast
 import pytest
 
-from sonos_lastfm.config import Config
-from sonos_lastfm.scrobbler import Scrobbler
+from bifrost.config import Config
+from bifrost.scrobbler import Scrobbler
 
 
 @pytest.fixture

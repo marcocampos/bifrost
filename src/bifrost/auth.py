@@ -9,7 +9,7 @@ import pylast
 
 def run_auth() -> None:
     """Interactive auth flow: get API credentials, authenticate, print .env values."""
-    print("sonos-lastfm: Last.fm Authentication\n")
+    print("Bifrost: Last.fm Authentication\n")
 
     api_key = input("Last.fm API Key: ").strip()
     api_secret = input("Last.fm API Secret: ").strip()

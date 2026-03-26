@@ -2,13 +2,13 @@
 
 import pytest
 
-from sonos_lastfm.config import load_config
+from bifrost.config import load_config
 
 
 @pytest.fixture(autouse=True)
 def _no_dotenv(monkeypatch):
     """Prevent load_dotenv from loading .env files during tests."""
-    monkeypatch.setattr("sonos_lastfm.config.load_dotenv", lambda: None)
+    monkeypatch.setattr("bifrost.config.load_dotenv", lambda: None)
 
 
 @pytest.fixture

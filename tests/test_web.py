@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from sonos_lastfm.web.app import WebApp
+from bifrost.web.app import WebApp
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def test_index_returns_html(client):
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "sonos-lastfm" in response.text
+    assert "Bifrost" in response.text
 
 
 def test_status_empty_initially(client):

@@ -7,4 +7,4 @@ COPY src/ src/
 
 RUN pip install --no-cache-dir .
 
-CMD ["sonos-lastfm"]
+CMD ["bifrost"]

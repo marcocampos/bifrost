@@ -5,7 +5,7 @@ import time
 
 import pylast
 
-from sonos_lastfm.config import Config
+from bifrost.config import Config
 
 logger = logging.getLogger(__name__)
 

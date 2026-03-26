@@ -5,13 +5,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from sonos_lastfm.config import Config
-from sonos_lastfm.sonos_listener import (
+from bifrost.config import Config
+from bifrost.sonos_listener import (
     SonosListener,
     get_album_art_url,
     parse_duration,
 )
-from sonos_lastfm.track_state import Action, ActionType, TrackInfo, TrackStateManager
+from bifrost.track_state import Action, ActionType, TrackInfo, TrackStateManager
 
 
 def _make_config(**kwargs):

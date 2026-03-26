@@ -1,4 +1,4 @@
-"""Entry point for sonos-lastfm."""
+"""Entry point for bifrost."""
 
 import logging
 import signal
@@ -7,30 +7,30 @@ import threading
 
 import uvicorn
 
-from sonos_lastfm.config import load_config
-from sonos_lastfm.scrobbler import Scrobbler
-from sonos_lastfm.sonos_listener import SonosListener
-from sonos_lastfm.track_state import TrackStateManager
-from sonos_lastfm.web.app import WebApp
+from bifrost.config import load_config
+from bifrost.scrobbler import Scrobbler
+from bifrost.sonos_listener import SonosListener
+from bifrost.track_state import TrackStateManager
+from bifrost.web.app import WebApp
 
 
 def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1] == "auth":
-        from sonos_lastfm.auth import run_auth
+        from bifrost.auth import run_auth
 
         run_auth()
         return
 
     config = load_config()
 
-    from sonos_lastfm.logging_config import setup_logging
+    from bifrost.logging_config import setup_logging
     setup_logging(config.log_level)
 
     logger = logging.getLogger(__name__)
 
     scrobbler = Scrobbler(config)
     if not scrobbler.verify_credentials():
-        logger.error("Last.fm credentials are invalid. Run 'sonos-lastfm auth' to reconfigure.")
+        logger.error("Last.fm credentials are invalid. Run 'bifrost auth' to reconfigure.")
         sys.exit(1)
 
     state_manager = TrackStateManager()

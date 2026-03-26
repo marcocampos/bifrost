@@ -8,7 +8,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from sonos_lastfm.scrobbler import Scrobbler
+from bifrost.scrobbler import Scrobbler
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 class WebApp:
     def __init__(self, scrobbler: Scrobbler | None = None) -> None:
-        self.app = FastAPI(title="sonos-lastfm")
+        self.app = FastAPI(title="bifrost")
         self._connections: list[WebSocket] = []
         self._current_state: dict = {}
         self._scrobbler = scrobbler
