@@ -90,6 +90,28 @@
         return `<a href="${escapeAttr(url)}" class="${className}" target="_blank" rel="noopener">${escapeHtml(text)}</a>`;
     }
 
+    function renderServiceBadge(service, artist, title) {
+        const url = serviceSearchUrl(service, artist, title);
+        if (url) {
+            return `<a href="${escapeAttr(url)}" class="service-badge service-link" target="_blank" rel="noopener">${escapeHtml(service)}</a>`;
+        }
+        return `<span class="service-badge">${escapeHtml(service)}</span>`;
+    }
+
+    function serviceSearchUrl(service, artist, title) {
+        const q = encodeURIComponent(`${artist} ${title}`);
+        switch (service) {
+            case "Spotify": return `https://open.spotify.com/search/${q}`;
+            case "Apple Music": return `https://music.apple.com/search?term=${q}`;
+            case "Amazon Music": return `https://music.amazon.com/search/${q}`;
+            case "Tidal": return `https://listen.tidal.com/search?q=${q}`;
+            case "Qobuz": return `https://www.qobuz.com/search?q=${q}`;
+            case "Deezer": return `https://www.deezer.com/search/${q}`;
+            case "SoundCloud": return `https://soundcloud.com/search?q=${q}`;
+            default: return null;
+        }
+    }
+
     // ── Icons ──
 
     const musicIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
@@ -157,7 +179,7 @@
             card.innerHTML = `
                 <div class="art-wrap">${artHtml}</div>
                 <div class="track-details">
-                    <div class="speaker-name">${speakerIcon} ${escapeHtml(info.speaker_name)}</div>
+                    <div class="speaker-name">${speakerIcon} ${escapeHtml(info.speaker_name)}${info.service ? renderServiceBadge(info.service, info.artist, info.title) : ""}</div>
                     <div class="track-title">${info.artist ? lastfmLink(lastfmTrackUrl(info.artist, info.title), info.title, "lastfm-link") : escapeHtml(info.title)}</div>
                     <div class="track-artist">${lastfmLink(lastfmArtistUrl(info.artist), info.artist, "lastfm-link")}</div>
                     ${info.album && info.artist ? `<div class="track-album">${lastfmLink(lastfmAlbumUrl(info.artist, info.album), info.album, "lastfm-link")}</div>` : ""}

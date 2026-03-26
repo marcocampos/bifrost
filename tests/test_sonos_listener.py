@@ -10,6 +10,7 @@ import pytest
 from sonos_lastfm.config import Config
 from sonos_lastfm.sonos_listener import (
     SonosListener,
+    detect_music_service,
     get_album_art_url,
     parse_duration,
 )
@@ -454,3 +455,47 @@ class TestParseEventFallbackUri:
 
         state, track = listener._parse_event("192.168.1.10", event)
         assert track.uri == "x-fallback://uri"
+
+
+class TestDetectMusicService:
+    def test_spotify(self):
+        assert detect_music_service("x-sonos-spotify:spotify:track:abc123") == "Spotify"
+
+    def test_apple_music(self):
+        assert detect_music_service("x-sonos-http:apple.com/some/path") == "Apple Music"
+
+    def test_amazon_music(self):
+        assert detect_music_service("x-sonos-http:song:12345.amazonaws.com") == "Amazon Music"
+
+    def test_tidal(self):
+        assert detect_music_service("x-sonos-http:tidal/track/12345") == "Tidal"
+
+    def test_qobuz(self):
+        assert detect_music_service("x-sonos-http:qobuz/track/12345") == "Qobuz"
+
+    def test_deezer(self):
+        assert detect_music_service("x-sonos-http:deezer/track/12345") == "Deezer"
+
+    def test_soundcloud(self):
+        assert detect_music_service("x-sonos-http:track:soundcloud:12345") == "SoundCloud"
+
+    def test_radio(self):
+        assert detect_music_service("x-rincon-mp3radio:http://stream.example.com") == "Radio"
+
+    def test_local_library(self):
+        assert detect_music_service("x-file-cifs://nas/music/song.mp3") == "Local Library"
+
+    def test_generic_sonos(self):
+        assert detect_music_service("x-sonosapi-stream:unknown") == "Sonos"
+
+    def test_empty(self):
+        assert detect_music_service("") is None
+
+    def test_none(self):
+        assert detect_music_service(None) is None
+
+    def test_unknown_uri(self):
+        assert detect_music_service("http://example.com/song.mp3") is None
+
+    def test_case_insensitive(self):
+        assert detect_music_service("X-SONOS-SPOTIFY:spotify:track:abc") == "Spotify"
