@@ -200,11 +200,18 @@
     const historyList = document.getElementById("history-list");
     let historyTimer;
 
+    const spinner = `<div class="loading"><div class="loading-spinner"></div><span>Loading...</span></div>`;
+    let historyFirstLoad = true;
+
     function fetchHistory() {
+        if (historyFirstLoad) {
+            historySection.style.display = "";
+            historyList.innerHTML = spinner;
+        }
         fetch("/api/history?limit=20")
             .then(r => r.json())
-            .then(renderHistory)
-            .catch(() => {});
+            .then(data => { historyFirstLoad = false; renderHistory(data); })
+            .catch(() => { historyFirstLoad = false; });
     }
 
     function renderHistory(tracks) {
@@ -304,10 +311,17 @@
     });
 
     function fetchStats() {
+        statsArtists.innerHTML = spinner;
+        statsAlbums.innerHTML = "";
+        statsTracks.innerHTML = "";
+        statsTotalCount.textContent = "--";
+
         fetch(`/api/stats?period=${currentPeriod}&limit=10`)
             .then(r => r.json())
             .then(renderStats)
-            .catch(() => {});
+            .catch(() => {
+                statsArtists.innerHTML = `<div class="stats-empty">Failed to load stats</div>`;
+            });
     }
 
     function renderStats(data) {
