@@ -43,6 +43,7 @@ omit = ["src/bifrost/__main__.py"]
 [tool.ruff]
 target-version = "py314"
 line-length = 100
+exclude = ["src/bifrost/_version.py"]
 
 [tool.ruff.lint]
 select = [
