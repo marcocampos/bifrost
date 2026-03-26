@@ -164,7 +164,7 @@ class SonosListener:
                     duration=action.track.duration_seconds or None,
                 )
 
-        if actions and self.on_state_change:
+        if self.on_state_change:
             self._broadcast_state()
 
     def _broadcast_state(self) -> None:

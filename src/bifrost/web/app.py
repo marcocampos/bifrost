@@ -1,5 +1,6 @@
 """FastAPI web application with WebSocket for real-time playback updates."""
 
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -22,6 +23,7 @@ class WebApp:
         self._current_state: dict = {}
         self._scrobbler = scrobbler
         self._speaker_count: int = 0
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._setup_routes()
 
     def _setup_routes(self) -> None:
@@ -96,6 +98,8 @@ class WebApp:
 
         @self.app.websocket("/ws")
         async def websocket_endpoint(ws: WebSocket) -> None:
+            if self._loop is None:
+                self._loop = asyncio.get_running_loop()
             await ws.accept()
             self._connections.append(ws)
             try:
@@ -122,19 +126,20 @@ class WebApp:
     def broadcast(self, state: dict) -> None:
         """Called from the listener thread to push state updates."""
         self._current_state = state
-        stale: list[WebSocket] = []
-        for ws in self._connections:
-            try:
-                # Use the event loop from the async context
-                import asyncio
+        if self._loop is None:
+            return
+        payload = json.dumps(state)
+        self._loop.call_soon_threadsafe(self._send_to_all, payload)
 
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    asyncio.run_coroutine_threadsafe(ws.send_text(json.dumps(state)), loop)
-                else:
-                    loop.run_until_complete(ws.send_text(json.dumps(state)))
-            except Exception:
-                stale.append(ws)
-        for ws in stale:
+    def _send_to_all(self, payload: str) -> None:
+        """Send payload to all connected WebSockets (runs on the event loop thread)."""
+        for ws in list(self._connections):
+            asyncio.ensure_future(self._safe_send(ws, payload))
+
+    async def _safe_send(self, ws: WebSocket, payload: str) -> None:
+        """Send to a single WebSocket, removing it on failure."""
+        try:
+            await ws.send_text(payload)
+        except Exception:
             if ws in self._connections:
                 self._connections.remove(ws)

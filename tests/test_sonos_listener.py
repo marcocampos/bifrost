@@ -308,12 +308,12 @@ class TestProcessActions:
         listener._process_actions(actions)
         callback.assert_called_once()
 
-    def test_process_actions_no_callback_on_empty(self):
+    def test_process_actions_broadcasts_even_without_actions(self):
         callback = MagicMock()
         listener = _make_listener(on_state_change=callback)
 
         listener._process_actions([])
-        callback.assert_not_called()
+        callback.assert_called_once()
 
     def test_duration_zero_passed_as_none(self):
         scrobbler = MagicMock()
@@ -328,6 +328,41 @@ class TestProcessActions:
             album=None,
             duration=None,
         )
+
+
+class TestBroadcastOnTransportEvent:
+    def test_broadcast_on_stop_without_actions(self):
+        """Stopping an already-scrobbled track produces no actions but must still broadcast."""
+        callback = MagicMock()
+        state_manager = TrackStateManager()
+        listener = _make_listener(state_manager=state_manager, on_state_change=callback)
+
+        track = TrackInfo(title="Song", artist="Artist", duration_seconds=200)
+
+        # Start playing and mark as scrobbled
+        state_manager.handle_event("192.168.1.10", "PLAYING", track)
+        ps = state_manager._states["192.168.1.10"]
+        ps.scrobbled = True
+        callback.reset_mock()
+
+        # Stop produces no scrobble actions since already scrobbled
+        actions = state_manager.handle_event("192.168.1.10", "STOPPED", None)
+        assert len(actions) == 0
+
+        # _process_actions always broadcasts, even with empty actions
+        listener._process_actions(actions)
+        callback.assert_called_once()
+
+    def test_no_extra_broadcast_when_actions_present(self):
+        """When actions are present, only _process_actions broadcasts (not double)."""
+        callback = MagicMock()
+        listener = _make_listener(on_state_change=callback)
+        track = TrackInfo(title="Song", artist="Artist")
+        actions = [Action(type=ActionType.NOW_PLAYING, speaker_id="spk1", track=track)]
+
+        listener._process_actions(actions)
+        # Should broadcast exactly once via _process_actions
+        assert callback.call_count == 1
 
 
 class TestBroadcastState:

@@ -83,15 +83,33 @@ def test_broadcast_with_no_connections(web_app):
     assert web_app._current_state == {"test": "data"}
 
 
-def test_broadcast_removes_stale_connections(web_app):
+def test_broadcast_skips_send_without_loop(web_app):
+    """Broadcast should update state but skip WS sends when no loop is set."""
+    ws = MagicMock()
+    web_app._connections.append(ws)
+    web_app.broadcast({"test": "data"})
+    assert web_app._current_state == {"test": "data"}
+    # send_text should not have been called since _loop is None
+    ws.send_text.assert_not_called()
+
+
+def test_broadcast_schedules_on_loop(web_app):
+    loop = MagicMock()
+    web_app._loop = loop
+    web_app.broadcast({"test": "data"})
+    assert web_app._current_state == {"test": "data"}
+    loop.call_soon_threadsafe.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_safe_send_removes_stale_connection(web_app):
     stale_ws = MagicMock()
     stale_ws.send_text = MagicMock(side_effect=Exception("closed"))
     web_app._connections.append(stale_ws)
 
-    web_app.broadcast({"test": "data"})
+    await web_app._safe_send(stale_ws, '{"test": "data"}')
 
     assert stale_ws not in web_app._connections
-    assert web_app._current_state == {"test": "data"}
 
 
 def test_history_returns_recent_tracks():
