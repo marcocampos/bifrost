@@ -77,7 +77,6 @@ class Scrobbler:
                     "title": str(track.title),
                     "album": str(album) if album else None,
                     "timestamp": int(played.timestamp) if played.timestamp else None,
-                    "album_art_url": played.track.get_cover_image() if hasattr(played.track, "get_cover_image") else None,
                 })
             return result
         except (pylast.NetworkError, pylast.WSError) as e:

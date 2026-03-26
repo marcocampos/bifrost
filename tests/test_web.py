@@ -99,7 +99,7 @@ def test_broadcast_removes_stale_connections(web_app):
 def test_history_returns_recent_tracks():
     scrobbler = MagicMock()
     scrobbler.get_recent_tracks.return_value = [
-        {"artist": "Artist", "title": "Song", "album": "Album", "timestamp": 1000, "album_art_url": None},
+        {"artist": "Artist", "title": "Song", "album": "Album", "timestamp": 1000},
     ]
     app = WebApp(scrobbler=scrobbler)
     client = TestClient(app.app)

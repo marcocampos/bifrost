@@ -89,14 +89,12 @@ def test_get_recent_tracks(scrobbler):
     played1.track.title = "Title1"
     played1.album = "Album1"
     played1.timestamp = "1700000000"
-    played1.track.get_cover_image.return_value = "https://img.com/1.jpg"
 
     played2 = MagicMock()
     played2.track.artist = "Artist2"
     played2.track.title = "Title2"
     played2.album = None
     played2.timestamp = "1700001000"
-    played2.track.get_cover_image.return_value = None
 
     mock_user = MagicMock()
     mock_user.get_recent_tracks.return_value = [played1, played2]
@@ -109,7 +107,6 @@ def test_get_recent_tracks(scrobbler):
     assert result[0]["title"] == "Title1"
     assert result[0]["album"] == "Album1"
     assert result[0]["timestamp"] == 1700000000
-    assert result[0]["album_art_url"] == "https://img.com/1.jpg"
     assert result[1]["album"] is None
 
 
