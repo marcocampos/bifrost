@@ -7,13 +7,18 @@ import pytest
 from sonos_lastfm.config import load_config
 
 
+@pytest.fixture(autouse=True)
+def _no_dotenv(monkeypatch):
+    """Prevent load_dotenv from loading .env files during tests."""
+    monkeypatch.setattr("sonos_lastfm.config.load_dotenv", lambda: None)
+
+
 @pytest.fixture
 def base_env(monkeypatch):
     """Set minimal required environment variables."""
     monkeypatch.setenv("LASTFM_API_KEY", "test-key")
     monkeypatch.setenv("LASTFM_API_SECRET", "test-secret")
     monkeypatch.setenv("LASTFM_SESSION_KEY", "test-session")
-    # Clear any .env file influence
     monkeypatch.delenv("SONOS_SPEAKERS", raising=False)
     monkeypatch.delenv("WEB_PORT", raising=False)
     monkeypatch.delenv("LOG_LEVEL", raising=False)
