@@ -83,7 +83,18 @@ def test_broadcast_with_no_connections(web_app):
     assert web_app._current_state == {"test": "data"}
 
 
+def test_broadcast_skips_send_without_loop(web_app):
+    """Broadcast should update state but skip WS sends when no loop is set."""
+    ws = MagicMock()
+    web_app._connections.append(ws)
+    web_app.broadcast({"test": "data"})
+    assert web_app._current_state == {"test": "data"}
+    # send_text should not have been called since _loop is None
+    ws.send_text.assert_not_called()
+
+
 def test_broadcast_removes_stale_connections(web_app):
+    web_app._loop = MagicMock()
     stale_ws = MagicMock()
     stale_ws.send_text = MagicMock(side_effect=Exception("closed"))
     web_app._connections.append(stale_ws)
