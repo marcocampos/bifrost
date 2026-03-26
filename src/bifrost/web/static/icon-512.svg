@@ -1,4 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#000"/>
-  <path d="M256 96v207.63c-11.02-6.35-23.7-10.26-37.33-10.26-41.22 0-74.67 33.45-74.67 74.67s33.45 74.63 74.67 74.63 74.67-33.41 74.67-74.63V170.67H368V96H256z" fill="#fff"/>
+  <defs>
+    <linearGradient id="bridge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b6b"/>
+      <stop offset="25%" stop-color="#ffa94d"/>
+      <stop offset="50%" stop-color="#51cf66"/>
+      <stop offset="75%" stop-color="#339af0"/>
+      <stop offset="100%" stop-color="#cc5de8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
+  <path d="M80 373 Q256 80 432 373" stroke="url(#bridge)" stroke-width="26" fill="none" stroke-linecap="round"/>
+  <path d="M80 400 Q256 120 432 400" stroke="url(#bridge)" stroke-width="13" fill="none" stroke-linecap="round" opacity="0.4"/>
+  <circle cx="256" cy="240" r="8" fill="#fff"/>
+  <path d="M256 240 v-85 h43 v-27 h-58 v120" stroke="#fff" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="234" cy="256" r="22" stroke="#fff" stroke-width="11" fill="none"/>
 </svg>
