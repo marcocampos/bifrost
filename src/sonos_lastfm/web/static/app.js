@@ -54,6 +54,24 @@
         bgGlow.style.opacity = "1";
     }
 
+    // ── Last.fm links ──
+
+    function lastfmArtistUrl(artist) {
+        return `https://www.last.fm/music/${encodeURIComponent(artist)}`;
+    }
+
+    function lastfmTrackUrl(artist, title) {
+        return `https://www.last.fm/music/${encodeURIComponent(artist)}/_/${encodeURIComponent(title)}`;
+    }
+
+    function lastfmAlbumUrl(artist, album) {
+        return `https://www.last.fm/music/${encodeURIComponent(artist)}/${encodeURIComponent(album)}`;
+    }
+
+    function lastfmLink(url, text, className) {
+        return `<a href="${escapeAttr(url)}" class="${className}" target="_blank" rel="noopener">${escapeHtml(text)}</a>`;
+    }
+
     // ── Icons ──
 
     const musicIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
@@ -122,9 +140,9 @@
                 <div class="art-wrap">${artHtml}</div>
                 <div class="track-details">
                     <div class="speaker-name">${speakerIcon} ${escapeHtml(info.speaker_name)}</div>
-                    <div class="track-title">${escapeHtml(info.title)}</div>
-                    <div class="track-artist">${escapeHtml(info.artist)}</div>
-                    ${info.album ? `<div class="track-album">${escapeHtml(info.album)}</div>` : ""}
+                    <div class="track-title">${info.artist ? lastfmLink(lastfmTrackUrl(info.artist, info.title), info.title, "lastfm-link") : escapeHtml(info.title)}</div>
+                    <div class="track-artist">${lastfmLink(lastfmArtistUrl(info.artist), info.artist, "lastfm-link")}</div>
+                    ${info.album && info.artist ? `<div class="track-album">${lastfmLink(lastfmAlbumUrl(info.artist, info.album), info.album, "lastfm-link")}</div>` : ""}
                     <div class="track-footer">
                         <span class="badge ${scrobbleClass}"><span class="badge-dot"></span>${scrobbleLabel}</span>
                         ${durationBadge}
