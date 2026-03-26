@@ -21,7 +21,8 @@ class Scrobbler:
             password_hash=config.lastfm_password_hash or None,
             session_key=config.lastfm_session_key or None,
         )
-        logger.info("Connected to Last.fm as %s", config.lastfm_username or "(session key)")
+        self._username = config.lastfm_username or "(session key)"
+        logger.info("Connected to Last.fm", extra={"username": self._username})
 
     def update_now_playing(
         self,
@@ -37,9 +38,9 @@ class Scrobbler:
                 album=album,
                 duration=duration,
             )
-            logger.debug("Now playing: %s - %s", artist, title)
+            logger.debug("Now playing updated", extra={"artist": artist, "title": title})
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to update now playing: %s", e)
+            logger.error("Failed to update now playing", extra={"artist": artist, "title": title, "error": str(e)})
 
     def scrobble(
         self,
@@ -59,9 +60,9 @@ class Scrobbler:
                 album=album,
                 duration=duration,
             )
-            logger.info("Scrobbled: %s - %s", artist, title)
+            logger.info("Scrobbled", extra={"artist": artist, "title": title})
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to scrobble %s - %s: %s", artist, title, e)
+            logger.error("Failed to scrobble", extra={"artist": artist, "title": title, "error": str(e)})
 
     def get_recent_tracks(self, limit: int = 20) -> list[dict]:
         """Fetch the user's recent scrobbles from Last.fm."""
@@ -80,7 +81,7 @@ class Scrobbler:
                 })
             return result
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to fetch recent tracks: %s", e)
+            logger.error("Failed to fetch recent tracks", extra={"error": str(e)})
             return []
 
     def get_stats(self, period: str = "7day", limit: int = 10) -> dict:
@@ -125,7 +126,7 @@ class Scrobbler:
                 "top_tracks": top_tracks,
             }
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to fetch stats: %s", e)
+            logger.error("Failed to fetch stats", extra={"error": str(e)})
             return {
                 "period": period,
                 "total_scrobbles": 0,
@@ -139,10 +140,10 @@ class Scrobbler:
         try:
             track = self.network.get_track(artist, title)
             track.love()
-            logger.info("Loved: %s - %s", artist, title)
+            logger.info("Loved track", extra={"artist": artist, "title": title})
             return True
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to love %s - %s: %s", artist, title, e)
+            logger.error("Failed to love track", extra={"artist": artist, "title": title, "error": str(e)})
             return False
 
     def unlove_track(self, artist: str, title: str) -> bool:
@@ -150,10 +151,10 @@ class Scrobbler:
         try:
             track = self.network.get_track(artist, title)
             track.unlove()
-            logger.info("Unloved: %s - %s", artist, title)
+            logger.info("Unloved track", extra={"artist": artist, "title": title})
             return True
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to unlove %s - %s: %s", artist, title, e)
+            logger.error("Failed to unlove track", extra={"artist": artist, "title": title, "error": str(e)})
             return False
 
     def is_track_loved(self, artist: str, title: str) -> bool:
@@ -163,7 +164,7 @@ class Scrobbler:
             user = self.network.get_authenticated_user()
             return bool(track.get_userloved(user))
         except (pylast.NetworkError, pylast.WSError) as e:
-            logger.error("Failed to check loved status: %s", e)
+            logger.error("Failed to check loved status", extra={"error": str(e)})
             return False
 
     def get_session_key(self) -> str:

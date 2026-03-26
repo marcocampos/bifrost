@@ -25,11 +25,8 @@ def main() -> None:
 
     config = load_config()
 
-    logging.basicConfig(
-        level=getattr(logging, config.log_level.upper(), logging.INFO),
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
-    )
+    from sonos_lastfm.logging_config import setup_logging
+    setup_logging(config.log_level)
 
     scrobbler = Scrobbler(config)
     state_manager = TrackStateManager()

@@ -82,7 +82,7 @@ class SonosListener:
             ]
 
         for s in coordinators:
-            logger.info("Found speaker: %s (%s)", s.player_name, s.ip_address)
+            logger.info("Found speaker", extra={"speaker": s.player_name, "ip": s.ip_address})
 
         return coordinators
 
@@ -95,10 +95,10 @@ class SonosListener:
             sub = speaker.avTransport.subscribe(auto_renew=True)
             self._subscriptions[key] = sub
             self._speakers[key] = speaker
-            logger.info("Subscribed to events from %s", speaker.player_name)
+            logger.info("Subscribed to events", extra={"speaker": speaker.player_name})
             return sub
         except Exception:
-            logger.exception("Failed to subscribe to %s", speaker.player_name)
+            logger.exception("Failed to subscribe", extra={"speaker": speaker.player_name})
             return None
 
     def _unsubscribe_all(self) -> None:
@@ -207,7 +207,7 @@ class SonosListener:
                     sub.unsubscribe()
                 except Exception:
                     pass
-            logger.info("Removed speaker %s (no longer coordinator)", ip)
+            logger.info("Removed speaker (no longer coordinator)", extra={"ip": ip})
 
         # Subscribe to new coordinators
         for speaker in new_coordinators:
