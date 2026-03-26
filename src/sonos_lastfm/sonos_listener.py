@@ -34,31 +34,58 @@ def parse_duration(duration_str: str) -> int:
         return 0
 
 
+_SONOS_SERVICE_IDS = {
+    "9": "Spotify",
+    "12": "Spotify",
+    "204": "Apple Music",
+    "262": "Tidal",
+    "31": "Qobuz",
+    "171": "Amazon Music",
+    "2": "Deezer",
+    "160": "SoundCloud",
+    "303": "YouTube Music",
+    "516": "Sonos Radio",
+    "517": "Sonos Radio",
+}
+
+
+def _extract_sid(uri: str) -> str | None:
+    """Extract the sid parameter from a Sonos URI."""
+    import re
+    match = re.search(r"[?&]sid=(\d+)", uri)
+    return match.group(1) if match else None
+
+
 def detect_music_service(uri: str) -> str | None:
     """Detect the music service from a Sonos track URI."""
     if not uri:
         return None
     uri_lower = uri.lower()
+
+    # First try: match by Sonos service ID (most reliable)
+    sid = _extract_sid(uri)
+    if sid and sid in _SONOS_SERVICE_IDS:
+        return _SONOS_SERVICE_IDS[sid]
+
+    # Fallback: match by URI prefix/content
     if uri_lower.startswith("x-sonos-spotify:"):
         return "Spotify"
-    if uri_lower.startswith("x-sonos-http:song:") or "amazonaws.com" in uri_lower:
-        return "Amazon Music"
-    if "apple.com" in uri_lower or uri_lower.startswith("x-sonos-http:apple"):
+    if "apple.com" in uri_lower:
         return "Apple Music"
+    if "amazonaws.com" in uri_lower:
+        return "Amazon Music"
     if "tidal" in uri_lower:
         return "Tidal"
     if "qobuz" in uri_lower:
         return "Qobuz"
     if "deezer" in uri_lower:
         return "Deezer"
-    if uri_lower.startswith("x-sonos-http:track:") and "soundcloud" in uri_lower:
-        return "SoundCloud"
     if uri_lower.startswith("x-rincon-mp3radio:") or uri_lower.startswith("aac:"):
         return "Radio"
     if uri_lower.startswith("x-file-cifs:") or uri_lower.startswith("x-rincon-playlist:"):
         return "Local Library"
-    if uri_lower.startswith("x-sonos-http:") or uri_lower.startswith("x-sonosapi-"):
-        return "Sonos"
+    if uri_lower.startswith("x-sonosapi-stream:") or uri_lower.startswith("x-sonosapi-radio:"):
+        return "Sonos Radio"
     return None
 
 
