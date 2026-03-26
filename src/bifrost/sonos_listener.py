@@ -237,6 +237,8 @@ class SonosListener:
                     if transport_state:
                         actions = self.state_manager.handle_event(ip, transport_state, track_info)
                         self._process_actions(actions)
+                        if not actions:
+                            self._broadcast_state()
                 except Empty:
                     pass
                 except Exception:
