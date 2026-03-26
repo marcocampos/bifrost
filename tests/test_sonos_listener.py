@@ -468,6 +468,9 @@ class TestDetectMusicService:
     def test_tidal_by_sid(self):
         assert detect_music_service("x-sonos-http:track%3a123?sid=262&flags=8232") == "Tidal"
 
+    def test_tidal_by_sid_174(self):
+        assert detect_music_service("x-sonos-http:track%2f58990527.flac?sid=174&flags=24616&sn=193") == "Tidal"
+
     def test_qobuz_by_sid(self):
         assert detect_music_service("x-sonos-http:track%3a259272307%3a7.flac?sid=31&flags=8232") == "Qobuz"
 
