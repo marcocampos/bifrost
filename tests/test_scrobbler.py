@@ -118,6 +118,58 @@ def test_get_recent_tracks_network_error(scrobbler):
     assert result == []
 
 
+def test_get_stats(scrobbler):
+    mock_user = MagicMock()
+
+    artist_item = MagicMock()
+    artist_item.__str__ = lambda self: "Radiohead"
+    mock_user.get_top_artists.return_value = [MagicMock(item=artist_item, weight=42)]
+
+    album_item = MagicMock()
+    album_item.title = "OK Computer"
+    album_item.artist = "Radiohead"
+    mock_user.get_top_albums.return_value = [MagicMock(item=album_item, weight=15)]
+
+    track_item = MagicMock()
+    track_item.title = "Paranoid Android"
+    track_item.artist = "Radiohead"
+    mock_user.get_top_tracks.return_value = [MagicMock(item=track_item, weight=8)]
+
+    mock_user.get_playcount.return_value = 12345
+    scrobbler.network.get_authenticated_user.return_value = mock_user
+
+    result = scrobbler.get_stats(period="7day", limit=10)
+
+    assert result["period"] == "7day"
+    assert result["total_scrobbles"] == 12345
+    assert len(result["top_artists"]) == 1
+    assert result["top_artists"][0]["name"] == "Radiohead"
+    assert result["top_artists"][0]["plays"] == 42
+    assert result["top_albums"][0]["name"] == "OK Computer"
+    assert result["top_tracks"][0]["name"] == "Paranoid Android"
+
+
+def test_get_stats_invalid_period(scrobbler):
+    mock_user = MagicMock()
+    mock_user.get_top_artists.return_value = []
+    mock_user.get_top_albums.return_value = []
+    mock_user.get_top_tracks.return_value = []
+    mock_user.get_playcount.return_value = 0
+    scrobbler.network.get_authenticated_user.return_value = mock_user
+
+    result = scrobbler.get_stats(period="invalid")
+    assert result["period"] == "7day"
+
+
+def test_get_stats_network_error(scrobbler):
+    scrobbler.network.get_authenticated_user.side_effect = pylast.NetworkError(
+        None, "timeout"
+    )
+    result = scrobbler.get_stats()
+    assert result["total_scrobbles"] == 0
+    assert result["top_artists"] == []
+
+
 def test_get_session_key(scrobbler):
     scrobbler.network.session_key = "abc123"
     assert scrobbler.get_session_key() == "abc123"

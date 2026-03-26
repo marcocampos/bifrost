@@ -129,3 +129,43 @@ def test_history_without_scrobbler():
     response = client.get("/api/history")
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_stats_returns_data():
+    scrobbler = MagicMock()
+    scrobbler.get_stats.return_value = {
+        "period": "7day",
+        "total_scrobbles": 100,
+        "top_artists": [{"name": "Artist", "plays": 10}],
+        "top_albums": [],
+        "top_tracks": [],
+    }
+    app = WebApp(scrobbler=scrobbler)
+    client = TestClient(app.app)
+
+    response = client.get("/api/stats?period=7day")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_scrobbles"] == 100
+    assert len(data["top_artists"]) == 1
+    scrobbler.get_stats.assert_called_once_with(period="7day", limit=10)
+
+
+def test_stats_clamps_limit():
+    scrobbler = MagicMock()
+    scrobbler.get_stats.return_value = {"period": "7day", "total_scrobbles": 0, "top_artists": [], "top_albums": [], "top_tracks": []}
+    app = WebApp(scrobbler=scrobbler)
+    client = TestClient(app.app)
+
+    client.get("/api/stats?limit=100")
+    scrobbler.get_stats.assert_called_once_with(period="7day", limit=50)
+
+
+def test_stats_without_scrobbler():
+    app = WebApp(scrobbler=None)
+    client = TestClient(app.app)
+
+    response = client.get("/api/stats")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_scrobbles"] == 0

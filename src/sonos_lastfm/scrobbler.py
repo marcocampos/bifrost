@@ -83,5 +83,56 @@ class Scrobbler:
             logger.error("Failed to fetch recent tracks: %s", e)
             return []
 
+    def get_stats(self, period: str = "7day", limit: int = 10) -> dict:
+        """Fetch listening stats from Last.fm for the given period."""
+        valid_periods = {"7day", "1month", "3month", "6month", "12month", "overall"}
+        if period not in valid_periods:
+            period = "7day"
+
+        try:
+            user = self.network.get_authenticated_user()
+
+            top_artists = [
+                {"name": str(a.item), "plays": int(a.weight)}
+                for a in user.get_top_artists(period=period, limit=limit)
+            ]
+
+            top_albums = [
+                {
+                    "name": str(a.item.title),
+                    "artist": str(a.item.artist),
+                    "plays": int(a.weight),
+                }
+                for a in user.get_top_albums(period=period, limit=limit)
+            ]
+
+            top_tracks = [
+                {
+                    "name": str(t.item.title),
+                    "artist": str(t.item.artist),
+                    "plays": int(t.weight),
+                }
+                for t in user.get_top_tracks(period=period, limit=limit)
+            ]
+
+            playcount = int(user.get_playcount())
+
+            return {
+                "period": period,
+                "total_scrobbles": playcount,
+                "top_artists": top_artists,
+                "top_albums": top_albums,
+                "top_tracks": top_tracks,
+            }
+        except (pylast.NetworkError, pylast.WSError) as e:
+            logger.error("Failed to fetch stats: %s", e)
+            return {
+                "period": period,
+                "total_scrobbles": 0,
+                "top_artists": [],
+                "top_albums": [],
+                "top_tracks": [],
+            }
+
     def get_session_key(self) -> str:
         return self.network.session_key
