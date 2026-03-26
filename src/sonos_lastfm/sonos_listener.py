@@ -34,64 +34,6 @@ def parse_duration(duration_str: str) -> int:
         return 0
 
 
-_SONOS_SERVICE_IDS = {
-    "9": "Spotify",
-    "12": "Spotify",
-    "204": "Apple Music",
-    "206": "Apple Music",
-    "174": "Tidal",
-    "262": "Tidal",
-    "31": "Qobuz",
-    "171": "Amazon Music",
-    "2": "Deezer",
-    "160": "SoundCloud",
-    "284": "YouTube Music",
-    "303": "YouTube Music",
-    "516": "Sonos Radio",
-    "517": "Sonos Radio",
-}
-
-
-def _extract_sid(uri: str) -> str | None:
-    """Extract the sid parameter from a Sonos URI."""
-    import re
-    match = re.search(r"[?&]sid=(\d+)", uri)
-    return match.group(1) if match else None
-
-
-def detect_music_service(uri: str) -> str | None:
-    """Detect the music service from a Sonos track URI."""
-    if not uri:
-        return None
-    uri_lower = uri.lower()
-
-    # First try: match by Sonos service ID (most reliable)
-    sid = _extract_sid(uri)
-    if sid and sid in _SONOS_SERVICE_IDS:
-        return _SONOS_SERVICE_IDS[sid]
-
-    # Fallback: match by URI prefix/content
-    if uri_lower.startswith("x-sonos-spotify:"):
-        return "Spotify"
-    if "apple.com" in uri_lower:
-        return "Apple Music"
-    if "amazonaws.com" in uri_lower:
-        return "Amazon Music"
-    if "tidal" in uri_lower:
-        return "Tidal"
-    if "qobuz" in uri_lower:
-        return "Qobuz"
-    if "deezer" in uri_lower:
-        return "Deezer"
-    if uri_lower.startswith("x-rincon-mp3radio:") or uri_lower.startswith("aac:"):
-        return "Radio"
-    if uri_lower.startswith("x-file-cifs:") or uri_lower.startswith("x-rincon-playlist:"):
-        return "Local Library"
-    if uri_lower.startswith("x-sonosapi-stream:") or uri_lower.startswith("x-sonosapi-radio:"):
-        return "Sonos Radio"
-    return None
-
-
 def get_album_art_url(speaker: soco.SoCo, meta) -> str | None:
     """Extract album art URL from track metadata."""
     if meta and hasattr(meta, "album_art_uri") and meta.album_art_uri:
@@ -196,8 +138,6 @@ class SonosListener:
         else:
             uri = variables.get("current_track_uri", "")
 
-        service = detect_music_service(uri)
-
         track = TrackInfo(
             title=title,
             artist=artist,
@@ -205,7 +145,6 @@ class SonosListener:
             album_art_url=album_art_url,
             duration_seconds=duration,
             uri=uri,
-            service=service,
         )
         return transport_state, track
 
@@ -247,7 +186,6 @@ class SonosListener:
                 "album": play_state.track.album,
                 "album_art_url": play_state.track.album_art_url,
                 "duration": play_state.track.duration_seconds,
-                "service": play_state.track.service,
                 "is_playing": play_state.is_playing,
                 "scrobbled": play_state.scrobbled,
             }

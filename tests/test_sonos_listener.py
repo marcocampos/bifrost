@@ -10,7 +10,6 @@ import pytest
 from sonos_lastfm.config import Config
 from sonos_lastfm.sonos_listener import (
     SonosListener,
-    detect_music_service,
     get_album_art_url,
     parse_duration,
 )
@@ -455,65 +454,3 @@ class TestParseEventFallbackUri:
 
         state, track = listener._parse_event("192.168.1.10", event)
         assert track.uri == "x-fallback://uri"
-
-
-class TestDetectMusicService:
-    # SID-based detection (primary method)
-    def test_spotify_by_sid(self):
-        assert detect_music_service("x-sonos-http:track%3a123?sid=9&flags=8232") == "Spotify"
-
-    def test_apple_music_by_sid(self):
-        assert detect_music_service("x-sonos-http:librarytrack%3ai.EYk.mp4?sid=204&flags=8232&sn=195") == "Apple Music"
-
-    def test_tidal_by_sid(self):
-        assert detect_music_service("x-sonos-http:track%3a123?sid=262&flags=8232") == "Tidal"
-
-    def test_tidal_by_sid_174(self):
-        assert detect_music_service("x-sonos-http:track%2f58990527.flac?sid=174&flags=24616&sn=193") == "Tidal"
-
-    def test_qobuz_by_sid(self):
-        assert detect_music_service("x-sonos-http:track%3a259272307%3a7.flac?sid=31&flags=8232") == "Qobuz"
-
-    def test_amazon_music_by_sid(self):
-        assert detect_music_service("x-sonos-http:track%3a123?sid=171&flags=8232") == "Amazon Music"
-
-    def test_deezer_by_sid(self):
-        assert detect_music_service("x-sonos-http:track%3a123?sid=2&flags=8232") == "Deezer"
-
-    def test_sonos_radio_by_sid(self):
-        assert detect_music_service("x-sonosapi-stream:seventies?sid=516&flags=8232") == "Sonos Radio"
-
-    def test_youtube_music_by_sid(self):
-        assert detect_music_service("x-sonos-http:track%3a123?sid=303&flags=8232") == "YouTube Music"
-
-    # URI prefix fallback detection
-    def test_spotify_by_prefix(self):
-        assert detect_music_service("x-sonos-spotify:spotify:track:abc123") == "Spotify"
-
-    def test_apple_music_by_url(self):
-        assert detect_music_service("https://apple.com/some/path") == "Apple Music"
-
-    def test_radio_by_prefix(self):
-        assert detect_music_service("x-rincon-mp3radio:http://stream.example.com") == "Radio"
-
-    def test_local_library(self):
-        assert detect_music_service("x-file-cifs://nas/music/song.mp3") == "Local Library"
-
-    def test_sonos_radio_by_prefix(self):
-        assert detect_music_service("x-sonosapi-stream:unknown") == "Sonos Radio"
-
-    # Edge cases
-    def test_empty(self):
-        assert detect_music_service("") is None
-
-    def test_none(self):
-        assert detect_music_service(None) is None
-
-    def test_unknown_uri(self):
-        assert detect_music_service("http://example.com/song.mp3") is None
-
-    def test_case_insensitive_prefix(self):
-        assert detect_music_service("X-SONOS-SPOTIFY:spotify:track:abc") == "Spotify"
-
-    def test_unknown_sid_falls_through(self):
-        assert detect_music_service("x-sonos-http:track?sid=9999") is None

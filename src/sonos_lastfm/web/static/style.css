@@ -311,34 +311,6 @@ main {
     opacity: 0.6;
 }
 
-.service-badge {
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--text-muted);
-    background: var(--pending-bg);
-    padding: 1px 6px;
-    border-radius: 3px;
-    margin-left: 6px;
-    letter-spacing: 0.03em;
-    text-transform: none;
-}
-
-a.service-link {
-    text-decoration: none;
-    color: var(--text-muted);
-    transition: color 0.15s, background 0.15s;
-    cursor: pointer;
-}
-
-a.service-link:visited {
-    color: var(--text-muted);
-}
-
-a.service-link:hover {
-    color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.1);
-}
-
 .track-title {
     font-size: 17px;
     font-weight: 700;

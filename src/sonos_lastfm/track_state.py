@@ -20,7 +20,6 @@ class TrackInfo:
     album_art_url: str | None = None
     duration_seconds: int = 0
     uri: str = ""
-    service: str | None = None
 
     def is_same_track(self, other: TrackInfo | None) -> bool:
         if other is None:
