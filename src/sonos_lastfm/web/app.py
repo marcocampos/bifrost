@@ -29,6 +29,14 @@ class WebApp:
         async def index() -> FileResponse:
             return FileResponse(STATIC_DIR / "index.html")
 
+        @self.app.get("/sw.js")
+        async def service_worker() -> FileResponse:
+            return FileResponse(
+                STATIC_DIR / "sw.js",
+                media_type="application/javascript",
+                headers={"Service-Worker-Allowed": "/"},
+            )
+
         @self.app.get("/api/health")
         async def health() -> dict:
             lastfm_ok = False
