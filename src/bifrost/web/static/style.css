@@ -736,6 +736,13 @@ main {
     overflow: hidden;
 }
 
+.stats-row-name-wrap {
+    min-width: 0;
+    width: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
 .stats-row-name {
     font-size: 15px;
     font-weight: 500;
