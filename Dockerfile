@@ -13,6 +13,6 @@ RUN pip install --no-cache-dir . \
 USER bifrost
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/')"]
+    CMD ["python", "-c", "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"WEB_PORT\", \"8080\")}/', timeout=3)"]
 
 CMD ["bifrost"]

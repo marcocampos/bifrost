@@ -50,6 +50,28 @@ jobs:
       - name: Run tests
         run: uv run pytest --cov=bifrost --cov-report=term-missing -v
 
+  audit:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Export production dependencies
+        run: uv export --no-dev --no-editable --no-emit-project > /tmp/requirements.txt
+
+      - name: Audit dependencies for vulnerabilities
+        run: uv run pip-audit -r /tmp/requirements.txt
+
   docker:
     runs-on: ubuntu-latest
     needs: test
@@ -59,3 +81,22 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t bifrost:test .
+
+  scan-image:
+    runs-on: ubuntu-latest
+    needs: docker
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Build Docker image
+        run: docker build -t bifrost:scan .
+
+      - name: Scan Docker image for vulnerabilities
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        with:
+          image-ref: "bifrost:scan"
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
+          ignore-unfixed: true
