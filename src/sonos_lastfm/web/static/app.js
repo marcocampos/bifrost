@@ -263,5 +263,98 @@
     fetchHistory();
     historyTimer = setInterval(fetchHistory, 30000);
 
+    // ── Tabs ──
+
+    const tabs = document.querySelectorAll(".tab");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            const target = tab.dataset.tab;
+
+            tabs.forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+
+            tabContents.forEach(tc => tc.classList.remove("active"));
+            document.getElementById(`tab-${target}`).classList.add("active");
+
+            if (target === "stats" && !statsLoaded) {
+                fetchStats();
+            }
+        });
+    });
+
+    // ── Stats ──
+
+    const statsArtists = document.getElementById("stats-artists");
+    const statsAlbums = document.getElementById("stats-albums");
+    const statsTracks = document.getElementById("stats-tracks");
+    const statsTotalCount = document.getElementById("stats-total-count");
+    const periodBtns = document.querySelectorAll(".period-btn");
+    let currentPeriod = "7day";
+    let statsLoaded = false;
+
+    periodBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            periodBtns.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentPeriod = btn.dataset.period;
+            fetchStats();
+        });
+    });
+
+    function fetchStats() {
+        fetch(`/api/stats?period=${currentPeriod}&limit=10`)
+            .then(r => r.json())
+            .then(renderStats)
+            .catch(() => {});
+    }
+
+    function renderStats(data) {
+        statsLoaded = true;
+
+        statsTotalCount.textContent = data.total_scrobbles.toLocaleString();
+
+        statsArtists.innerHTML = renderStatsList(data.top_artists, item =>
+            lastfmLink(lastfmArtistUrl(item.name), item.name, "lastfm-link stats-row-name")
+        );
+
+        statsAlbums.innerHTML = renderStatsList(data.top_albums, item => `
+            <span class="stats-row-name">${lastfmLink(lastfmAlbumUrl(item.artist, item.name), item.name, "lastfm-link")}</span>
+            <span class="stats-row-sub">${lastfmLink(lastfmArtistUrl(item.artist), item.artist, "lastfm-link")}</span>
+        `);
+
+        statsTracks.innerHTML = renderStatsList(data.top_tracks, item => `
+            <span class="stats-row-name">${lastfmLink(lastfmTrackUrl(item.artist, item.name), item.name, "lastfm-link")}</span>
+            <span class="stats-row-sub">${lastfmLink(lastfmArtistUrl(item.artist), item.artist, "lastfm-link")}</span>
+        `);
+    }
+
+    function renderStatsList(items, renderName) {
+        if (!items || items.length === 0) {
+            return `<div class="stats-empty">No data for this period</div>`;
+        }
+
+        const maxPlays = items[0].plays;
+
+        return items.map((item, i) => {
+            const pct = maxPlays > 0 ? (item.plays / maxPlays) * 100 : 0;
+            return `
+                <div class="stats-row">
+                    <span class="stats-rank">${i + 1}</span>
+                    <div class="stats-bar-wrap">
+                        <div class="stats-row-info">
+                            <div style="min-width:0;overflow:hidden">${renderName(item)}</div>
+                            <span class="stats-row-plays">${item.plays} plays</span>
+                        </div>
+                        <div class="stats-bar">
+                            <div class="stats-bar-fill" style="width:${pct}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
     connect();
 })();
