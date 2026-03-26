@@ -134,5 +134,37 @@ class Scrobbler:
                 "top_tracks": [],
             }
 
+    def love_track(self, artist: str, title: str) -> bool:
+        """Love a track on Last.fm. Returns True on success."""
+        try:
+            track = self.network.get_track(artist, title)
+            track.love()
+            logger.info("Loved: %s - %s", artist, title)
+            return True
+        except (pylast.NetworkError, pylast.WSError) as e:
+            logger.error("Failed to love %s - %s: %s", artist, title, e)
+            return False
+
+    def unlove_track(self, artist: str, title: str) -> bool:
+        """Unlove a track on Last.fm. Returns True on success."""
+        try:
+            track = self.network.get_track(artist, title)
+            track.unlove()
+            logger.info("Unloved: %s - %s", artist, title)
+            return True
+        except (pylast.NetworkError, pylast.WSError) as e:
+            logger.error("Failed to unlove %s - %s: %s", artist, title, e)
+            return False
+
+    def is_track_loved(self, artist: str, title: str) -> bool:
+        """Check if a track is loved on Last.fm."""
+        try:
+            track = self.network.get_track(artist, title)
+            user = self.network.get_authenticated_user()
+            return bool(track.get_userloved(user))
+        except (pylast.NetworkError, pylast.WSError) as e:
+            logger.error("Failed to check loved status: %s", e)
+            return False
+
     def get_session_key(self) -> str:
         return self.network.session_key

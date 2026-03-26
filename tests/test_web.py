@@ -169,3 +169,46 @@ def test_stats_without_scrobbler():
     assert response.status_code == 200
     data = response.json()
     assert data["total_scrobbles"] == 0
+
+
+def test_love_track():
+    scrobbler = MagicMock()
+    scrobbler.love_track.return_value = True
+    app = WebApp(scrobbler=scrobbler)
+    client = TestClient(app.app)
+
+    response = client.post("/api/love?artist=Artist&title=Song")
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
+    scrobbler.love_track.assert_called_once_with("Artist", "Song")
+
+
+def test_unlove_track():
+    scrobbler = MagicMock()
+    scrobbler.unlove_track.return_value = True
+    app = WebApp(scrobbler=scrobbler)
+    client = TestClient(app.app)
+
+    response = client.post("/api/unlove?artist=Artist&title=Song")
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
+
+
+def test_is_loved():
+    scrobbler = MagicMock()
+    scrobbler.is_track_loved.return_value = True
+    app = WebApp(scrobbler=scrobbler)
+    client = TestClient(app.app)
+
+    response = client.get("/api/loved?artist=Artist&title=Song")
+    assert response.status_code == 200
+    assert response.json() == {"loved": True}
+
+
+def test_love_without_scrobbler():
+    app = WebApp(scrobbler=None)
+    client = TestClient(app.app)
+
+    assert client.post("/api/love?artist=A&title=T").json() == {"ok": False}
+    assert client.post("/api/unlove?artist=A&title=T").json() == {"ok": False}
+    assert client.get("/api/loved?artist=A&title=T").json() == {"loved": False}

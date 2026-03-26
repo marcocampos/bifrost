@@ -397,6 +397,33 @@ main {
     color: var(--text-muted);
 }
 
+/* ── Heart / Love button ── */
+
+.heart-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--text-muted);
+    transition: color 0.2s, transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.heart-btn:hover {
+    color: #e74c6f;
+    transform: scale(1.15);
+}
+
+.heart-btn.loved {
+    color: #e74c6f;
+}
+
+.heart-btn:active {
+    transform: scale(0.9);
+}
+
 /* ── Now playing indicator ── */
 
 .eq-bars {

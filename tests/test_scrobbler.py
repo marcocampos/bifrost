@@ -170,6 +170,49 @@ def test_get_stats_network_error(scrobbler):
     assert result["top_artists"] == []
 
 
+def test_love_track(scrobbler):
+    scrobbler.network.get_track.return_value = MagicMock()
+    assert scrobbler.love_track("Artist", "Title") is True
+    scrobbler.network.get_track.return_value.love.assert_called_once()
+
+
+def test_love_track_network_error(scrobbler):
+    scrobbler.network.get_track.side_effect = pylast.NetworkError(None, "timeout")
+    assert scrobbler.love_track("Artist", "Title") is False
+
+
+def test_unlove_track(scrobbler):
+    scrobbler.network.get_track.return_value = MagicMock()
+    assert scrobbler.unlove_track("Artist", "Title") is True
+    scrobbler.network.get_track.return_value.unlove.assert_called_once()
+
+
+def test_unlove_track_network_error(scrobbler):
+    scrobbler.network.get_track.side_effect = pylast.NetworkError(None, "timeout")
+    assert scrobbler.unlove_track("Artist", "Title") is False
+
+
+def test_is_track_loved_true(scrobbler):
+    mock_track = MagicMock()
+    mock_track.get_userloved.return_value = True
+    scrobbler.network.get_track.return_value = mock_track
+    scrobbler.network.get_authenticated_user.return_value = MagicMock()
+    assert scrobbler.is_track_loved("Artist", "Title") is True
+
+
+def test_is_track_loved_false(scrobbler):
+    mock_track = MagicMock()
+    mock_track.get_userloved.return_value = None
+    scrobbler.network.get_track.return_value = mock_track
+    scrobbler.network.get_authenticated_user.return_value = MagicMock()
+    assert scrobbler.is_track_loved("Artist", "Title") is False
+
+
+def test_is_track_loved_network_error(scrobbler):
+    scrobbler.network.get_track.side_effect = pylast.NetworkError(None, "timeout")
+    assert scrobbler.is_track_loved("Artist", "Title") is False
+
+
 def test_get_session_key(scrobbler):
     scrobbler.network.session_key = "abc123"
     assert scrobbler.get_session_key() == "abc123"

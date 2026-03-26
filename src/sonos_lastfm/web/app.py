@@ -48,6 +48,27 @@ class WebApp:
                 return {"period": period, "total_scrobbles": 0, "top_artists": [], "top_albums": [], "top_tracks": []}
             return self._scrobbler.get_stats(period=period, limit=min(limit, 50))
 
+        @self.app.post("/api/love")
+        async def love_track(artist: str, title: str):
+            if not self._scrobbler:
+                return {"ok": False}
+            ok = self._scrobbler.love_track(artist, title)
+            return {"ok": ok}
+
+        @self.app.post("/api/unlove")
+        async def unlove_track(artist: str, title: str):
+            if not self._scrobbler:
+                return {"ok": False}
+            ok = self._scrobbler.unlove_track(artist, title)
+            return {"ok": ok}
+
+        @self.app.get("/api/loved")
+        async def is_loved(artist: str, title: str):
+            if not self._scrobbler:
+                return {"loved": False}
+            loved = self._scrobbler.is_track_loved(artist, title)
+            return {"loved": loved}
+
         @self.app.websocket("/ws")
         async def websocket_endpoint(ws: WebSocket):
             await ws.accept()
