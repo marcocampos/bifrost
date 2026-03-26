@@ -63,5 +63,26 @@ class Scrobbler:
         except (pylast.NetworkError, pylast.WSError) as e:
             logger.error("Failed to scrobble %s - %s: %s", artist, title, e)
 
+    def get_recent_tracks(self, limit: int = 20) -> list[dict]:
+        """Fetch the user's recent scrobbles from Last.fm."""
+        try:
+            user = self.network.get_authenticated_user()
+            tracks = user.get_recent_tracks(limit=limit)
+            result = []
+            for played in tracks:
+                track = played.track
+                album = played.album
+                result.append({
+                    "artist": str(track.artist),
+                    "title": str(track.title),
+                    "album": str(album) if album else None,
+                    "timestamp": int(played.timestamp) if played.timestamp else None,
+                    "album_art_url": played.track.get_cover_image() if hasattr(played.track, "get_cover_image") else None,
+                })
+            return result
+        except (pylast.NetworkError, pylast.WSError) as e:
+            logger.error("Failed to fetch recent tracks: %s", e)
+            return []
+
     def get_session_key(self) -> str:
         return self.network.session_key

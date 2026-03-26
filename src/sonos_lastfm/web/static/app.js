@@ -27,7 +27,10 @@
         ws.onerror = () => ws.close();
 
         ws.onmessage = (event) => {
-            render(JSON.parse(event.data));
+            const state = JSON.parse(event.data);
+            const hadScrobble = checkForNewScrobble(state);
+            render(state);
+            if (hadScrobble) fetchHistory();
         };
     }
 
@@ -36,6 +39,21 @@
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
         return `${m}:${s.toString().padStart(2, "0")}`;
+    }
+
+    // ── Scrobble detection ──
+
+    let prevScrobbleState = {};
+
+    function checkForNewScrobble(state) {
+        let newScrobble = false;
+        for (const [id, info] of Object.entries(state)) {
+            if (info.scrobbled && !prevScrobbleState[id]) {
+                newScrobble = true;
+            }
+            prevScrobbleState[id] = info.scrobbled;
+        }
+        return newScrobble;
     }
 
     // ── Album art background glow ──
@@ -175,6 +193,75 @@
         if (!str) return "";
         return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
+
+    // ── History ──
+
+    const historySection = document.getElementById("history-section");
+    const historyList = document.getElementById("history-list");
+    let historyTimer;
+
+    function fetchHistory() {
+        fetch("/api/history?limit=20")
+            .then(r => r.json())
+            .then(renderHistory)
+            .catch(() => {});
+    }
+
+    function renderHistory(tracks) {
+        if (!tracks || tracks.length === 0) {
+            historySection.style.display = "none";
+            return;
+        }
+
+        historySection.style.display = "";
+
+        historyList.innerHTML = tracks.map(t => {
+            const artHtml = t.album_art_url
+                ? `<img class="history-art" src="${escapeAttr(t.album_art_url)}" alt="" loading="lazy" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="history-art-placeholder" style="display:none">${musicIcon}</div>`
+                : `<div class="history-art-placeholder">${musicIcon}</div>`;
+
+            const titleLink = t.artist
+                ? lastfmLink(lastfmTrackUrl(t.artist, t.title), t.title, "lastfm-link")
+                : escapeHtml(t.title);
+
+            const artistLink = t.artist
+                ? lastfmLink(lastfmArtistUrl(t.artist), t.artist, "lastfm-link")
+                : "";
+
+            const albumHtml = t.album && t.artist
+                ? `<div class="history-album">${lastfmLink(lastfmAlbumUrl(t.artist, t.album), t.album, "lastfm-link")}</div>`
+                : "";
+
+            const timeStr = t.timestamp ? formatTimeAgo(t.timestamp) : "";
+
+            return `
+                <div class="history-item">
+                    ${artHtml}
+                    <div class="history-info">
+                        <div class="history-track">${titleLink}</div>
+                        <div class="history-artist">${artistLink}</div>
+                        ${albumHtml}
+                    </div>
+                    ${timeStr ? `<span class="history-time">${escapeHtml(timeStr)}</span>` : ""}
+                </div>
+            `;
+        }).join("");
+    }
+
+    function formatTimeAgo(timestamp) {
+        const now = Math.floor(Date.now() / 1000);
+        const diff = now - timestamp;
+        if (diff < 60) return "just now";
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+        if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    // Fetch history on load and periodically
+    fetchHistory();
+    historyTimer = setInterval(fetchHistory, 30000);
 
     connect();
 })();

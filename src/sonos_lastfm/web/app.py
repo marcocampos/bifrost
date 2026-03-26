@@ -5,10 +5,14 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+if TYPE_CHECKING:
+    from sonos_lastfm.scrobbler import Scrobbler
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +20,11 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 
 class WebApp:
-    def __init__(self) -> None:
+    def __init__(self, scrobbler: Scrobbler | None = None) -> None:
         self.app = FastAPI(title="sonos-lastfm")
         self._connections: list[WebSocket] = []
         self._current_state: dict = {}
+        self._scrobbler = scrobbler
         self._setup_routes()
 
     def _setup_routes(self) -> None:
@@ -30,6 +35,12 @@ class WebApp:
         @self.app.get("/api/status")
         async def status():
             return self._current_state
+
+        @self.app.get("/api/history")
+        async def history(limit: int = 20):
+            if not self._scrobbler:
+                return []
+            return self._scrobbler.get_recent_tracks(limit=min(limit, 50))
 
         @self.app.websocket("/ws")
         async def websocket_endpoint(ws: WebSocket):

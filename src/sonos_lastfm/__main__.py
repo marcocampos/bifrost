@@ -33,7 +33,7 @@ def main() -> None:
 
     scrobbler = Scrobbler(config)
     state_manager = TrackStateManager()
-    web_app = WebApp()
+    web_app = WebApp(scrobbler=scrobbler)
 
     listener = SonosListener(
         config=config,

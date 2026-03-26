@@ -83,6 +83,44 @@ def test_scrobble_ws_error(scrobbler):
     scrobbler.scrobble("Artist", "Title", timestamp=1000)
 
 
+def test_get_recent_tracks(scrobbler):
+    played1 = MagicMock()
+    played1.track.artist = "Artist1"
+    played1.track.title = "Title1"
+    played1.album = "Album1"
+    played1.timestamp = "1700000000"
+    played1.track.get_cover_image.return_value = "https://img.com/1.jpg"
+
+    played2 = MagicMock()
+    played2.track.artist = "Artist2"
+    played2.track.title = "Title2"
+    played2.album = None
+    played2.timestamp = "1700001000"
+    played2.track.get_cover_image.return_value = None
+
+    mock_user = MagicMock()
+    mock_user.get_recent_tracks.return_value = [played1, played2]
+    scrobbler.network.get_authenticated_user.return_value = mock_user
+
+    result = scrobbler.get_recent_tracks(limit=10)
+
+    assert len(result) == 2
+    assert result[0]["artist"] == "Artist1"
+    assert result[0]["title"] == "Title1"
+    assert result[0]["album"] == "Album1"
+    assert result[0]["timestamp"] == 1700000000
+    assert result[0]["album_art_url"] == "https://img.com/1.jpg"
+    assert result[1]["album"] is None
+
+
+def test_get_recent_tracks_network_error(scrobbler):
+    scrobbler.network.get_authenticated_user.side_effect = pylast.NetworkError(
+        None, "timeout"
+    )
+    result = scrobbler.get_recent_tracks()
+    assert result == []
+
+
 def test_get_session_key(scrobbler):
     scrobbler.network.session_key = "abc123"
     assert scrobbler.get_session_key() == "abc123"

@@ -94,3 +94,38 @@ def test_broadcast_removes_stale_connections(web_app):
 
     assert stale_ws not in web_app._connections
     assert web_app._current_state == {"test": "data"}
+
+
+def test_history_returns_recent_tracks():
+    scrobbler = MagicMock()
+    scrobbler.get_recent_tracks.return_value = [
+        {"artist": "Artist", "title": "Song", "album": "Album", "timestamp": 1000, "album_art_url": None},
+    ]
+    app = WebApp(scrobbler=scrobbler)
+    client = TestClient(app.app)
+
+    response = client.get("/api/history?limit=5")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["artist"] == "Artist"
+    scrobbler.get_recent_tracks.assert_called_once_with(limit=5)
+
+
+def test_history_clamps_limit():
+    scrobbler = MagicMock()
+    scrobbler.get_recent_tracks.return_value = []
+    app = WebApp(scrobbler=scrobbler)
+    client = TestClient(app.app)
+
+    client.get("/api/history?limit=100")
+    scrobbler.get_recent_tracks.assert_called_once_with(limit=50)
+
+
+def test_history_without_scrobbler():
+    app = WebApp(scrobbler=None)
+    client = TestClient(app.app)
+
+    response = client.get("/api/history")
+    assert response.status_code == 200
+    assert response.json() == []
