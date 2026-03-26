@@ -1,4 +1,4 @@
-const CACHE_NAME = "bifrost-v1";
+const CACHE_NAME = "bifrost-v2";
 const SHELL_ASSETS = [
     "/",
     "/static/style.css",

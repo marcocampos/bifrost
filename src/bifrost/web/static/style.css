@@ -622,7 +622,6 @@ main {
     max-width: 720px;
     margin: 0 auto;
     padding: 24px;
-    overflow: hidden;
 }
 
 .stats-header {
@@ -725,6 +724,7 @@ main {
 .stats-bar-wrap {
     flex: 1;
     min-width: 0;
+    overflow: hidden;
 }
 
 .stats-row-info {
@@ -733,6 +733,14 @@ main {
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 4px;
+    overflow: hidden;
+}
+
+.stats-row-name-wrap {
+    min-width: 0;
+    width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
 .stats-row-name {
@@ -757,6 +765,7 @@ main {
     color: var(--text-secondary);
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
+    padding-right: 4px;
 }
 
 .stats-bar {
@@ -884,14 +893,6 @@ main {
 
     .stats-total-count {
         font-size: 28px;
-    }
-
-    .stats-row {
-        padding: 8px 4px;
-    }
-
-    .stats-row-plays {
-        padding-right: 2px;
     }
 
     .history-section {

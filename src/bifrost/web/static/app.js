@@ -432,7 +432,7 @@
                     <span class="stats-rank">${i + 1}</span>
                     <div class="stats-bar-wrap">
                         <div class="stats-row-info">
-                            <div style="min-width:0;overflow:hidden">${renderName(item)}</div>
+                            <div class="stats-row-name-wrap">${renderName(item)}</div>
                             <span class="stats-row-plays">${item.plays} plays</span>
                         </div>
                         <div class="stats-bar">
