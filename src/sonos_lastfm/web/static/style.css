@@ -28,6 +28,27 @@ body {
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    position: relative;
+}
+
+/* ── Dynamic album art background glow ── */
+
+.bg-glow {
+    position: fixed;
+    inset: -40px;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center;
+    filter: blur(80px) saturate(1.4) brightness(0.3);
+    transform: scale(1.1);
+}
+
+header, main {
+    position: relative;
+    z-index: 1;
 }
 
 /* ── Header ── */

@@ -3,8 +3,10 @@
     const emptyState = document.getElementById("empty-state");
     const statusEl = document.getElementById("status-indicator");
     const statusText = statusEl.querySelector(".status-text");
+    const bgGlow = document.getElementById("bg-glow");
     let ws;
     let reconnectTimer;
+    let currentArtUrl = null;
 
     function connect() {
         const protocol = location.protocol === "https:" ? "wss:" : "ws:";
@@ -36,9 +38,29 @@
         return `${m}:${s.toString().padStart(2, "0")}`;
     }
 
-    const musicIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
+    // ── Album art background glow ──
+
+    function updateBackground(artUrl) {
+        if (!artUrl) {
+            bgGlow.style.opacity = "0";
+            currentArtUrl = null;
+            return;
+        }
+
+        if (artUrl === currentArtUrl) return;
+        currentArtUrl = artUrl;
+
+        bgGlow.style.backgroundImage = `url(${artUrl})`;
+        bgGlow.style.opacity = "1";
+    }
+
+    // ── Icons ──
+
+    const musicIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
 
     const speakerIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"></rect><circle cx="12" cy="14" r="4"></circle><line x1="12" y1="6" x2="12.01" y2="6"></line></svg>`;
+
+    // ── Render ──
 
     function render(state) {
         const entries = Object.entries(state);
@@ -50,14 +72,23 @@
                 el.style.transform = "translateY(8px)";
                 setTimeout(() => el.remove(), 250);
             });
+            updateBackground(null);
             return;
         }
 
         emptyState.style.display = "none";
         const activeSpeakers = new Set();
 
+        // Use the first playing speaker's art for the background
+        let bgArtUrl = null;
+
         for (const [speakerId, info] of entries) {
             activeSpeakers.add(speakerId);
+
+            if (info.album_art_url && (info.is_playing || !bgArtUrl)) {
+                bgArtUrl = info.album_art_url;
+            }
+
             let card = playersEl.querySelector(`[data-speaker-id="${speakerId}"]`);
             const isNew = !card;
 
@@ -111,6 +142,8 @@
                 setTimeout(() => el.remove(), 250);
             }
         });
+
+        updateBackground(bgArtUrl);
     }
 
     function escapeHtml(str) {
