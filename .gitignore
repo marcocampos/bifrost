@@ -7,3 +7,5 @@ build/
 .venv/
 .env
 *.lock
+src/bifrost/_version.py
+.coverage

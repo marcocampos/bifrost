@@ -1,6 +1,6 @@
 [project]
 name = "bifrost"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Scrobble songs played on Sonos speakers to Last.fm"
 requires-python = ">=3.14"
 dependencies = [
@@ -16,8 +16,14 @@ dependencies = [
 bifrost = "bifrost.__main__:main"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/bifrost/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bifrost"]
@@ -37,6 +43,7 @@ omit = ["src/bifrost/__main__.py"]
 [tool.ruff]
 target-version = "py314"
 line-length = 100
+exclude = ["src/bifrost/_version.py"]
 
 [tool.ruff.lint]
 select = [
