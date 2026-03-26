@@ -22,7 +22,10 @@
       "Bash(gh api:*)",
       "Bash(git remote:*)",
       "Bash(mv ~/Downloads/bifrost-demo.gif docs/screenshots/)",
-      "Bash(mv ~/downloads/bifrost-demo.gif docs/screenshots/)"
+      "Bash(mv ~/downloads/bifrost-demo.gif docs/screenshots/)",
+      "Bash(git checkout:*)",
+      "Bash(gh pr:*)",
+      "Bash(git pull:*)"
     ]
   }
 }

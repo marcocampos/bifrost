@@ -1,3 +1,6 @@
 """Bifrost - Bridge your Sonos speakers to Last.fm."""
 
-__version__ = "0.1.0"
+try:
+    from bifrost._version import __version__
+except ModuleNotFoundError:
+    __version__ = "0.0.0-dev"
