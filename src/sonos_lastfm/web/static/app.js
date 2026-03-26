@@ -11,13 +11,13 @@
         ws = new WebSocket(`${protocol}//${location.host}/ws`);
 
         ws.onopen = () => {
-            statusText.textContent = "live";
+            statusText.textContent = "Connected";
             statusEl.className = "status connected";
             clearTimeout(reconnectTimer);
         };
 
         ws.onclose = () => {
-            statusText.textContent = "disconnected";
+            statusText.textContent = "Disconnected";
             statusEl.className = "status disconnected";
             reconnectTimer = setTimeout(connect, 3000);
         };
@@ -25,8 +25,7 @@
         ws.onerror = () => ws.close();
 
         ws.onmessage = (event) => {
-            const state = JSON.parse(event.data);
-            render(state);
+            render(JSON.parse(event.data));
         };
     }
 
@@ -37,25 +36,24 @@
         return `${m}:${s.toString().padStart(2, "0")}`;
     }
 
-    const speakerIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><circle cx="12" cy="14" r="4"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>`;
+    const musicIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
 
-    const placeholderSvg = `<svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="24" stroke="currentColor" stroke-width="1.5"/><circle cx="32" cy="32" r="14" stroke="currentColor" stroke-width="1"/><circle cx="32" cy="32" r="3" fill="currentColor"/></svg>`;
+    const speakerIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>`;
 
     function render(state) {
         const entries = Object.entries(state);
 
         if (entries.length === 0) {
             emptyState.style.display = "";
-            Array.from(playersEl.querySelectorAll(".player-card")).forEach(el => {
+            playersEl.querySelectorAll(".player-card").forEach(el => {
                 el.style.opacity = "0";
                 el.style.transform = "translateY(8px)";
-                setTimeout(() => el.remove(), 300);
+                setTimeout(() => el.remove(), 250);
             });
             return;
         }
 
         emptyState.style.display = "none";
-
         const activeSpeakers = new Set();
 
         for (const [speakerId, info] of entries) {
@@ -73,48 +71,44 @@
             card.className = `player-card${info.is_playing ? " playing" : ""}`;
 
             const artHtml = info.album_art_url
-                ? `<img class="album-art" src="${escapeAttr(info.album_art_url)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'album-art-placeholder\\'>${placeholderSvg}</div><div class=\\'art-glow\\'></div>'">`
-                : `<div class="album-art-placeholder">${placeholderSvg}</div>`;
-
-            const durationHtml = info.duration
-                ? `<span class="duration-label">${formatDuration(info.duration)}</span>`
-                : "";
+                ? `<img class="album-art" src="${escapeAttr(info.album_art_url)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'album-art-placeholder\\'>${musicIcon}</div>'">`
+                : `<div class="album-art-placeholder">${musicIcon}</div>`;
 
             const scrobbleClass = info.scrobbled ? "scrobbled" : "pending";
-            const scrobbleText = info.scrobbled ? "scrobbled" : "listening";
+            const scrobbleLabel = info.scrobbled ? "Scrobbled" : "Listening";
 
-            const barsHtml = `<div class="now-playing-bars"><span></span><span></span><span></span><span></span></div>`;
-
-            const pausedHtml = !info.is_playing
-                ? `<span class="paused-label">paused</span>`
+            const durationBadge = info.duration
+                ? `<span class="badge badge-duration">${formatDuration(info.duration)}</span>`
                 : "";
 
+            const pausedBadge = !info.is_playing
+                ? `<span class="badge badge-paused">Paused</span>`
+                : "";
+
+            const eqBars = `<div class="eq-bars"><span></span><span></span><span></span><span></span></div>`;
+
             card.innerHTML = `
-                <div class="art-container">
-                    ${artHtml}
-                    <div class="art-glow"></div>
-                </div>
-                <div class="track-info">
+                <div class="art-wrap">${artHtml}</div>
+                <div class="track-details">
+                    <div class="speaker-name">${speakerIcon} ${escapeHtml(info.speaker_name)}</div>
                     <div class="track-title">${escapeHtml(info.title)}</div>
                     <div class="track-artist">${escapeHtml(info.artist)}</div>
                     ${info.album ? `<div class="track-album">${escapeHtml(info.album)}</div>` : ""}
-                    <div class="track-meta">
-                        <span class="speaker-label">${speakerIcon} ${escapeHtml(info.speaker_name)}</span>
-                        <span class="scrobble-badge ${scrobbleClass}"><span class="scrobble-dot"></span>${scrobbleText}</span>
-                        ${barsHtml}
-                        ${durationHtml}
-                        ${pausedHtml}
+                    <div class="track-footer">
+                        <span class="badge ${scrobbleClass}"><span class="badge-dot"></span>${scrobbleLabel}</span>
+                        ${durationBadge}
+                        ${pausedBadge}
+                        ${eqBars}
                     </div>
                 </div>
             `;
         }
 
-        // Remove cards for speakers no longer playing
         playersEl.querySelectorAll(".player-card").forEach(el => {
             if (!activeSpeakers.has(el.dataset.speakerId)) {
                 el.style.opacity = "0";
                 el.style.transform = "translateY(8px)";
-                setTimeout(() => el.remove(), 300);
+                setTimeout(() => el.remove(), 250);
             }
         });
     }
