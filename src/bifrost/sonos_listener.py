@@ -202,7 +202,7 @@ class SonosListener:
             if sub:
                 try:
                     sub.unsubscribe()
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             logger.info("Removed speaker (no longer coordinator)", extra={"ip": ip})
 
