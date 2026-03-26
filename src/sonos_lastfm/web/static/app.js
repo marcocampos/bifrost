@@ -273,7 +273,7 @@
             historySection.style.display = "";
             historyList.innerHTML = spinner;
         }
-        fetch("/api/history?limit=20")
+        fetch("/api/history?limit=5")
             .then(r => r.json())
             .then(data => { historyFirstLoad = false; renderHistory(data); })
             .catch(() => { historyFirstLoad = false; });
@@ -443,6 +443,32 @@
             `;
         }).join("");
     }
+
+    // ── Theme Toggle ──
+
+    const themeToggle = document.getElementById("theme-toggle");
+    const iconDark = document.getElementById("theme-icon-dark");
+    const iconLight = document.getElementById("theme-icon-light");
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+        iconDark.style.display = theme === "dark" ? "" : "none";
+        iconLight.style.display = theme === "light" ? "" : "none";
+    }
+
+    // Load saved theme or respect system preference
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+        setTheme(savedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+        setTheme("light");
+    }
+
+    themeToggle.addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-theme") || "dark";
+        setTheme(current === "dark" ? "light" : "dark");
+    });
 
     // ── Service Worker ──
 

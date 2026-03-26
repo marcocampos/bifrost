@@ -8,9 +8,10 @@
 
 :root {
     --bg: #000000;
-    --surface: #1a1a1a;
-    --surface-hover: #222222;
-    --border: #2a2a2a;
+    --surface: #141414;
+    --surface-hover: #1c1c1c;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.12);
     --text: #ffffff;
     --text-secondary: #a0a0a0;
     --text-muted: #666666;
@@ -18,7 +19,28 @@
     --scrobbled: #1db954;
     --scrobbled-bg: rgba(29, 185, 84, 0.12);
     --pending-bg: rgba(255, 255, 255, 0.06);
+    --heart: #e74c6f;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    color-scheme: dark;
+}
+
+[data-theme="light"] {
+    --bg: #f5f5f5;
+    --surface: #ffffff;
+    --surface-hover: #f0f0f0;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.12);
+    --text: #111111;
+    --text-secondary: #555555;
+    --text-muted: #999999;
+    --accent: #111111;
+    --scrobbled: #1db954;
+    --scrobbled-bg: rgba(29, 185, 84, 0.1);
+    --pending-bg: rgba(0, 0, 0, 0.04);
+    --heart: #e74c6f;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    color-scheme: light;
 }
 
 body {
@@ -45,8 +67,12 @@ body {
     pointer-events: none;
     background-size: cover;
     background-position: center;
-    filter: blur(80px) saturate(1.4) brightness(0.3);
+    filter: blur(80px) saturate(1.8) brightness(0.6);
     transform: scale(1.1);
+}
+
+[data-theme="light"] .bg-glow {
+    filter: blur(100px) saturate(1.8) brightness(1.2) opacity(0.3);
 }
 
 header, main {
@@ -64,9 +90,10 @@ header {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: rgba(0, 0, 0, 0.85);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
 }
 
 .header-left {
@@ -82,9 +109,37 @@ header {
 }
 
 .logo-text {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     letter-spacing: -0.01em;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 7px;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.theme-toggle:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+}
+
+.theme-toggle svg {
+    width: 14px;
+    height: 14px;
 }
 
 .status {
@@ -102,7 +157,7 @@ header {
 }
 
 .status-text {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-muted);
     transition: color 0.3s;
@@ -241,18 +296,21 @@ main {
 
 .player-card {
     background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 12px;
     display: flex;
     gap: 20px;
     align-items: flex-start;
-    transition: background 0.2s;
+    transition: background 0.2s, border-color 0.2s;
     animation: slideUp 0.35s ease-out;
+    box-shadow: var(--shadow);
 }
 
 .player-card:hover {
     background: var(--surface-hover);
+    border-color: var(--border-strong);
 }
 
 /* ── Album Art ── */
@@ -297,7 +355,7 @@ main {
 }
 
 .speaker-name {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
@@ -315,7 +373,7 @@ main {
 }
 
 .track-title {
-    font-size: 17px;
+    font-size: 19px;
     font-weight: 700;
     line-height: 1.25;
     white-space: nowrap;
@@ -325,7 +383,7 @@ main {
 }
 
 .track-artist {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 400;
     color: var(--text-secondary);
     margin-top: 2px;
@@ -335,7 +393,7 @@ main {
 }
 
 .track-album {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 400;
     color: var(--text-muted);
     margin-top: 2px;
@@ -357,11 +415,12 @@ main {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 100px;
     letter-spacing: 0.02em;
+    border: 1px solid var(--border);
 }
 
 .badge.scrobbled {
@@ -522,7 +581,7 @@ main {
 }
 
 .history-track {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -530,7 +589,7 @@ main {
 }
 
 .history-artist {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
@@ -539,7 +598,7 @@ main {
 }
 
 .history-album {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -548,7 +607,7 @@ main {
 }
 
 .history-time {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
     white-space: nowrap;
     flex-shrink: 0;
@@ -563,6 +622,7 @@ main {
     max-width: 720px;
     margin: 0 auto;
     padding: 24px;
+    overflow: hidden;
 }
 
 .stats-header {
@@ -598,8 +658,11 @@ main {
     display: flex;
     gap: 2px;
     background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 3px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .period-btn {
@@ -673,7 +736,7 @@ main {
 }
 
 .stats-row-name {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -681,7 +744,7 @@ main {
 }
 
 .stats-row-sub {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -689,7 +752,7 @@ main {
 }
 
 .stats-row-plays {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary);
     flex-shrink: 0;

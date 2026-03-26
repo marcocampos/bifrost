@@ -1,4 +1,4 @@
-const CACHE_NAME = "sonos-lastfm-v1";
+const CACHE_NAME = "sonos-lastfm-v2";
 const SHELL_ASSETS = [
     "/",
     "/static/style.css",
