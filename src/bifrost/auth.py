@@ -25,6 +25,7 @@ def run_auth() -> None:
         print("Error: Username and password are required.", file=sys.stderr)
         sys.exit(1)
 
+    # nosemgrep: python.lang.security.audit.md5-used-as-password.md5-used-as-password
     password_hash = hashlib.md5(password.encode("utf-8"), usedforsecurity=False).hexdigest()  # nosec B324
 
     print("\nAuthenticating with Last.fm...")

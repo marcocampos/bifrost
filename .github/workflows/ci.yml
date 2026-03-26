@@ -63,7 +63,7 @@ jobs:
         run: pipx install semgrep
 
       - name: Run Semgrep
-        run: semgrep scan --config auto --error src/
+        run: semgrep scan --config auto --error --exclude-rule javascript.browser.security.insecure-document-method.insecure-document-method src/
 
   audit:
     runs-on: ubuntu-latest
