@@ -181,8 +181,7 @@ class Scrobbler:
         """Check if a track is loved on Last.fm."""
         try:
             track = self.network.get_track(artist, title)
-            user = self.network.get_authenticated_user()
-            return bool(track.get_userloved(user))
+            return bool(track.get_userloved())
         except (pylast.NetworkError, pylast.WSError) as e:
             logger.error("Failed to check loved status", extra={"error": str(e)})
             return False
