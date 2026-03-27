@@ -200,7 +200,6 @@ def test_is_track_loved_true(scrobbler):
     mock_track = MagicMock()
     mock_track.get_userloved.return_value = True
     scrobbler.network.get_track.return_value = mock_track
-    scrobbler.network.get_authenticated_user.return_value = MagicMock()
     assert scrobbler.is_track_loved("Artist", "Title") is True
 
 
@@ -208,7 +207,6 @@ def test_is_track_loved_false(scrobbler):
     mock_track = MagicMock()
     mock_track.get_userloved.return_value = None
     scrobbler.network.get_track.return_value = mock_track
-    scrobbler.network.get_authenticated_user.return_value = MagicMock()
     assert scrobbler.is_track_loved("Artist", "Title") is False
 
 
